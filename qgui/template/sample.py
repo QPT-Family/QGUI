@@ -21,7 +21,6 @@ from ttkbootstrap import Style
 
 
 class Application(tkinter.Tk):
-
     def __init__(self):
         super().__init__()
         self.title('File Search Engine')
