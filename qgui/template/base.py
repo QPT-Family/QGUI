@@ -8,18 +8,23 @@ from tkinter import ttk
 from ttkbootstrap import Style
 
 
-class Application(tkinter.Tk):
-    def __init__(self):
+class CreateQGUI(tkinter.Tk):
+    def __init__(self, style='lumen'):
         super().__init__()
         self.title('File Search Engine')
-        self.style = Style('lumen')
+        self.style = Style(style)
         self.a = Progressbar(self)
         self.a.pack()
 
 
+class LeftTab(ttk.Frame):
+    def __init__(self, max_len, *args, **kwargs):
+        super().__init__()
+
+
 class Progressbar(ttk.Frame):
     def __init__(self, max_len, *args, **kwargs):
-        super(Progressbar, self).__init__()
+        super().__init__()
         # container for user input
         input_labelframe = ttk.Labelframe(self, text='基础配置', padding=(20, 10, 10, 5))
         input_labelframe.pack(side='top', fill='x')
@@ -49,4 +54,5 @@ class Progressbar(ttk.Frame):
         self.progressbar.pack(fill='y')
         self.progressbar["value"] = 10
 
-Application().mainloop()
+
+
