@@ -10,25 +10,17 @@ from ttkbootstrap import Style
 from qgui.manager import QStyle
 
 
-class BaseBanner:
-    pass
-
-
-class BaseTab:
-    pass
-
-
-class BaseModule:
-    pass
-
-
 class CreateQGUI(tkinter.Tk):
     def __init__(self,
                  title="未命名应用",
                  style=QStyle.default):
         super().__init__()
         self.title(title)
-        self.style = Style(style)
+        self.style = Style()
+        self.style.configure('bg.TFrame', background=self.style.colors.inputbg)
+        self.style.configure('bg.TLabel', background=self.style.colors.inputbg)
+        self.geometry("940x520")
+        self.wm_resizable(False, False)
 
 
 if __name__ == '__main__':

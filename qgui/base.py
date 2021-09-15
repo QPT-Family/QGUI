@@ -3,12 +3,22 @@
 # Copyright belongs to the author.
 # Please indicate the source for reprinting.
 
+import os
+from typing import List
+from types import MethodType, FunctionType
+
 import tkinter
 from tkinter import ttk
+
+from qgui.case import CollapsingFrame
 
 BLACK = "#24262d"
 GRAY = "#535353"
 GREEN = "#76b67e"
+FONT = "黑体-简"
+
+# ToDo 更换为绝对路径
+ICON = "qgui/resources/icon/play_w.png"
 
 TITLE_BG_COLOR = BLACK
 L_BOTTOM_FRAME_COLOR_ON = GREEN
@@ -16,87 +26,123 @@ L_BOTTOM_FRAME_COLOR_ON = GREEN
 
 # ToDo 主题部分可考虑通过增加warmup来解决
 
-class BaseWindow:
-    def __init__(self):
-        self.main_tk = tkinter.Tk()
-        self.main_tk.geometry("840x500")
-
-    def get_master(self):
-        return self.main_tk
-
-
 class BaseFrame:
     pass
 
 
-class BaseTab:
+class BaseLeftTab:
     def __init__(self):
-        self.frame = tkinter.Frame(bg=GRAY, width=150)
-        self.frame.pack(fill="y", anchor="nw")
-        # self.frame.pack_propagate(False)
+        self.frame = ttk.Frame(style="primary.TFrame")
+        self.frame.place(x=0, y=50, width=180, height=470)
         self.tabs = dict()
-        self.add_frame(BaseFrame())
 
-    def add_frame(self,
-                  frame: BaseFrame,
-                  subtitle="测试标题",
-                  subtitle_icon=None):
-        # ToDo 加icon的功能
-        button_frame = tkinter.Frame(self.frame,
-                                     height=50,
-                                     width=150,
-                                     bg=GRAY)
-        button_frame.grid()
-        # button_frame.grid_propagate(False)
-        l_bottom_frame = tkinter.Frame(button_frame,
-                                       width=10,
-                                       height=50,
-                                       bg=L_BOTTOM_FRAME_COLOR_ON)
-        l_bottom_frame.pack(fill="y", side="top", expand=True)
-        button = tkinter.Button(button_frame,
-                                bd=0,
-                                height=10,
-                                bg=GRAY)
-        button.pack(fill="y", side="top", expand=True)
+    def add_about(self,
+                  author="未知作者",
+                  version="0.0.1",
+                  other_info: List[str] = None):
+        bus_cf = CollapsingFrame(self.frame)
+        bus_cf.pack(fill='x', pady=0)
+
+        bus_frm = ttk.Frame(bus_cf, padding=5)
+        bus_frm.columnconfigure(1, weight=1)
+        bus_cf.add(bus_frm, title="相关信息", style='secondary.TButton')
+
+        ttk.Label(bus_frm, text=f"Author:\t{author}", style="TLabel").pack(anchor="nw")
+        ttk.Label(bus_frm, text=f"Version:\t{version}", style="TLabel").pack(anchor="nw")
+
+        for line in other_info:
+            ttk.Label(bus_frm, text=line, style="TLabel").pack(anchor="nw")
+
+    def add_homepage(self, tool):
+        btn = ttk.Button(self.frame,
+                         text=tool.name,
+                         image=tool.name,
+                         compound='left',
+                         command=tool.bind_func)
+        btn.pack(side='left', ipadx=5, ipady=5, padx=0, pady=1)
 
     def apply_root(self, master):
         self.frame.master = master
 
 
-class BaseBanner:
-    def __init__(self, title: str = "QGUI测试程序"):
-        self.frame = tkinter.Frame(bg=TITLE_BG_COLOR)
-        self.frame.pack(fill="x", anchor="nw")
-        self._set_title(title)
+class BaseTool:
+    def __init__(self,
+                 bind_func,
+                 name="未命名组件",
+                 icon=None,
+                 ):
+        if not hasattr(bind_func, "__call__"):
+            raise f"{__class__.__name__}的bind_func需具备__call__方法，建议在此传入函数或自行构建具备__call__方法的对象。"
 
-    def _set_title(self, text):
+        if icon and not os.path.exists(icon):
+            raise f"请确认{os.path.abspath(icon)}是否存在"
+        elif icon:
+            pass
+        else:
+            icon = ICON
+        self.name = name
+        self.bind_func = bind_func
+        self.icon = icon
+
+
+class BaseBar:
+    def __init__(self,
+                 title: str = "QGUI测试程序",
+                 style="primary"):
+        self.frame = ttk.Frame(style=style + ".TFrame")
+        self.frame.place(x=0, y=0, width=940, height=50)
+        self.img_info = dict()
+
         # 占位标题
         black = tkinter.Frame(self.frame,
-                              height=5,
+                              height=10,
                               bg=TITLE_BG_COLOR)
-        black.grid(row=0)
+        black.pack(side="right", anchor="se")
         # 主标题
+        # ToDo 需要修改bg
         title = tkinter.Label(self.frame,
-                              font=("等线", 30),
+                              font=(FONT, 30),
                               fg="AliceBlue",
-                              bg=TITLE_BG_COLOR,
-                              text=text,
-                              anchor="sw",
-                              height=1)
-        title.grid(sticky="sw", row=1, padx=5, pady=3)
+                              bg="#2d3e50",
+                              text=title)
+        title.pack(side="right", anchor="se", pady=3)
+
+    def add_tool(self, tool: BaseTool):
+        """
+        添加小工具组件
+        :param
+        """
+        self.img_info[tool.name] = tkinter.PhotoImage(name=tool.name,
+                                                      file=tool.icon)
+        btn = ttk.Button(self.frame,
+                         text=tool.name,
+                         image=tool.name,
+                         compound='left',
+                         command=tool.bind_func)
+
+        btn.pack(side='left', ipadx=5, ipady=5, padx=0, pady=1)
 
     def apply_root(self, master):
         self.frame.master = master
 
 
 if __name__ == '__main__':
-    _bw = BaseWindow()
-    _bw.get_master().wm_resizable(False, False)
+    from qgui.factory import CreateQGUI
 
-    _bb = BaseBanner()
-    _bt = BaseTab()
+    _bw = CreateQGUI()
 
-    _bb.apply_root(_bw.get_master())
-    _bt.apply_root(_bw.get_master())
+    _bb = BaseBar()
+    _bt = BaseLeftTab()
 
-    _bw.get_master().mainloop()
+    _bb.apply_root(_bw)
+    _bt.apply_root(_bw)
+
+    _bb.add_tool(BaseTool(lambda: print(1),
+                          icon="/Users/zhanghongji/PycharmProjects/QGUI/qgui/resources/icon/play_w.png"))
+    _bb.add_tool(BaseTool(lambda: print(1),
+                          name="222",
+                          icon="/Users/zhanghongji/PycharmProjects/QGUI/qgui/resources/icon/play_w.png"))
+
+    _bt.add_about(other_info=["QGUI:\thhhh"])
+    _bt.add_about(other_info=["QGUI:\thhhh"])
+    _bw.mainloop()

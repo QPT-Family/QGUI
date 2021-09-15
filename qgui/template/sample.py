@@ -1,264 +1,200 @@
-# Author: Acer Zhang
-# Datetime: 2021/8/31 
-# Copyright belongs to the author.
-# Please indicate the source for reprinting.
-
 """
     Author: Israel Dryer
-    Modified: 2021-04-09
-    Adapted for ttkbootstrap from: https://github.com/israel-dryer/File-Search-Engine-Tk
+    Modified: 2021-04-23
+    Adapted for ttkbootstrap from: http://www.leo-backup.com/screenshots.shtml
 """
-import csv
-import datetime
-import pathlib
 import tkinter
-from queue import Queue
-from threading import Thread
+from datetime import datetime
+from random import choices
 from tkinter import ttk
-from tkinter.filedialog import askdirectory, asksaveasfilename
+from tkinter.filedialog import askdirectory
+from tkinter.messagebox import showinfo
+from tkinter.scrolledtext import ScrolledText
 
 from ttkbootstrap import Style
 
 
 class Application(tkinter.Tk):
+
     def __init__(self):
         super().__init__()
-        self.title('File Search Engine')
-        self.style = Style('journal')
-        self.search = SearchEngine(self, padding=10)
-        self.search.pack(fill='both', expand='yes')
+        self.title('Back Me Up')
+        self.style = Style()
+        self.style.configure('bg.TFrame', background=self.style.colors.inputbg)
+        self.style.configure('bg.TLabel', background=self.style.colors.inputbg)
+        self.geometry("940x520")
+        self.bmu = BackMeUp(self, padding=2, style='bg.TFrame')
+        self.bmu.pack(fill='both', expand='yes')
 
 
-class SearchEngine(ttk.Frame):
+class BackMeUp(ttk.Frame):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # application variables
-        self.search_path_var = tkinter.StringVar(value=str(pathlib.Path().absolute()))
-        self.search_term_var = tkinter.StringVar(value='txt')
-        self.search_type_var = tkinter.StringVar(value='endswidth')
-        self.search_count = 0
 
-        # container for user input
-        input_labelframe = ttk.Labelframe(self, text='Complete the form to begin your search', padding=(20, 10, 10, 5))
-        input_labelframe.pack(side='top', fill='x')
-        input_labelframe.columnconfigure(1, weight=1)
+        # images
+        self.img_properties_d = tkinter.PhotoImage(name='properties-dark', file='assets/icons8_settings_24px.png')
+        self.img_properties_l = tkinter.PhotoImage(name='properties-light', file='assets/icons8_settings_24px_2.png')
+        self.img_addtobackup_d = tkinter.PhotoImage(name='add-to-backup-dark', file='assets/icons8_add_folder_24px.png')
 
-        # file path input
-        ttk.Label(input_labelframe, text='Path').grid(row=0, column=0, padx=10, pady=2, sticky='ew')
-        e1 = ttk.Entry(input_labelframe, textvariable=self.search_path_var)
-        e1.grid(row=0, column=1, sticky='ew', padx=10, pady=2)
-        b1 = ttk.Button(input_labelframe, text='Browse', command=self.on_browse, style='primary.TButton')
-        b1.grid(row=0, column=2, sticky='ew', pady=2, ipadx=10)
+        self.img_stopbackup_d = tkinter.PhotoImage(name='stop-backup-dark', file='assets/icons8_cancel_24px.png')
+        self.img_stopbackup_l = tkinter.PhotoImage(name='stop-backup-light', file='assets/icons8_cancel_24px_1.png')
 
-        # search term input
-        ttk.Label(input_labelframe, text='Term').grid(row=1, column=0, padx=10, pady=2, sticky='ew')
-        e2 = ttk.Entry(input_labelframe, textvariable=self.search_term_var)
-        e2.grid(row=1, column=1, sticky='ew', padx=10, pady=2)
-        b2 = ttk.Button(input_labelframe, text='Search', command=self.on_search, style='primary.Outline.TButton')
-        b2.grid(row=1, column=2, sticky='ew', pady=2)
+        self.img_refresh = tkinter.PhotoImage(name='refresh', file='assets/icons8_refresh_24px_1.png')
+        self.img_stop_d = tkinter.PhotoImage(name='stop-dark', file='assets/icons8_stop_24px.png')
+        self.img_stop_l = tkinter.PhotoImage(name='stop-light', file='assets/icons8_stop_24px_1.png')
+        self.img_opened_folder = tkinter.PhotoImage(name='opened-folder', file='assets/icons8_opened_folder_24px.png')
+        self.img_logo = tkinter.PhotoImage(name='logo', file='assets/backup.png')
 
-        # search type selection
-        ttk.Label(input_labelframe, text='Type').grid(row=2, column=0, padx=10, pady=2, sticky='ew')
-        option_frame = ttk.Frame(input_labelframe, padding=(15, 10, 0, 10))
-        option_frame.grid(row=2, column=1, columnspan=2, sticky='ew')
-        r1 = ttk.Radiobutton(option_frame, text='Contains', value='contains', variable=self.search_type_var)
-        r1.pack(side='left', fill='x', pady=2, padx=10)
-        r2 = ttk.Radiobutton(option_frame, text='StartsWith', value='startswith', variable=self.search_type_var)
-        r2.pack(side='left', fill='x', pady=2, padx=10)
-        r3 = ttk.Radiobutton(option_frame, text='EndsWith', value='endswith', variable=self.search_type_var)
-        r3.pack(side='left', fill='x', pady=2, padx=10)
-        r3.invoke()
+        # ----- buttonbar
+        buttonbar = ttk.Frame(self, style='primary.TFrame')
+        buttonbar.pack(fill='x', pady=1, side='top')
 
-        # search results tree
-        self.tree = ttk.Treeview(self, style='info.Treeview')
-        self.tree.pack(fill='both', pady=5)
-        self.tree['columns'] = ('modified', 'type', 'size', 'path')
-        self.tree.column('#0', width=400)
-        self.tree.column('modified', width=150, stretch=False, anchor='e')
-        self.tree.column('type', width=50, stretch=False, anchor='e')
-        self.tree.column('size', width=50, stretch=False, anchor='e')
-        self.tree.heading('#0', text='Name')
-        self.tree.heading('modified', text='Modified date')
-        self.tree.heading('type', text='Type')
-        self.tree.heading('size', text='Size')
-        self.tree.heading('path', text='Path')
+        ## refresh
+        bb_refresh_btn = ttk.Button(buttonbar, text='Refresh', image='refresh', compound='left')
+        bb_refresh_btn.configure(command=lambda: showinfo(message='Refreshing...'))
+        bb_refresh_btn.pack(side='left', ipadx=5, ipady=5, padx=0, pady=1)
 
-        # progress bar
-        self.progressbar = ttk.Progressbar(self, orient='horizontal', mode='indeterminate',
-                                           style='success.Horizontal.TProgressbar')
-        self.progressbar.pack(fill='x', pady=5)
+        ## stop
+        bb_stop_btn = ttk.Button(buttonbar, text='Stop', image='stop-light', compound='left')
+        bb_stop_btn.configure(command=lambda: showinfo(message='Stopping backup.'))
+        bb_stop_btn.pack(side='left', ipadx=5, ipady=5, padx=0, pady=1)
 
-        # right-click menu for treeview
-        self.menu = tkinter.Menu(self, tearoff=False)
-        self.menu.add_command(label='Reveal in file manager', command=self.on_doubleclick_tree)
-        self.menu.add_command(label='Export results to csv', command=self.export_to_csv)
+        ## settings
+        bb_settings_btn = ttk.Button(buttonbar, text='Settings', image='properties-light', compound='left')
+        bb_settings_btn.configure(command=lambda: showinfo(message='Changing settings'))
+        bb_settings_btn.pack(side='left', ipadx=5, ipady=5, padx=0, pady=1)
 
-        # event binding
-        self.tree.bind('<Double-1>', self.on_doubleclick_tree)
-        self.tree.bind('<Button-3>', self.right_click_tree)
+        # ----- left panel
+        left_panel = ttk.Frame(self, style='bg.TFrame')
+        left_panel.pack(side='left', fill='y')
 
-    def on_browse(self):
-        """Callback for directory browse"""
-        path = askdirectory(title='Directory')
-        if path:
-            self.search_path_var.set(path)
+        ## ----- backup summary (collapsible)
+        bus_cf = CollapsingFrame(left_panel)
+        bus_cf.pack(fill='x', pady=1)
 
-    def on_doubleclick_tree(self, event=None):
-        """Callback for double-click tree menu"""
-        try:
-            id = self.tree.selection()[0]
-        except IndexError:
+        ## container
+        bus_frm = ttk.Frame(bus_cf, padding=5)
+        bus_frm.columnconfigure(1, weight=1)
+        bus_cf.add(bus_frm, title='Backup Summary', style='secondary.TButton')
+
+        ## destination
+        ttk.Label(bus_frm, text='Destination:').grid(row=0, column=0, sticky='w', pady=2)
+        ttk.Label(bus_frm, textvariable='destination').grid(row=0, column=1, sticky='ew', padx=5, pady=2)
+        self.setvar('destination', 'd:/test/')
+
+        ## last run
+        ttk.Label(bus_frm, text='Last Run:').grid(row=1, column=0, sticky='w', pady=2)
+        ttk.Label(bus_frm, textvariable='lastrun').grid(row=1, column=1, sticky='ew', padx=5, pady=2)
+        self.setvar('lastrun', '14.06.2021 19:34:43')
+
+        ## files Identical
+        ttk.Label(bus_frm, text='Files Identical:').grid(row=2, column=0, sticky='w', pady=2)
+        ttk.Label(bus_frm, textvariable='filesidentical').grid(row=2, column=1, sticky='ew', padx=5, pady=2)
+        self.setvar('filesidentical', '15%')
+
+        ## section separator
+        bus_sep = ttk.Separator(bus_frm, style='secondary.Horizontal.TSeparator')
+        bus_sep.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew')
+
+        # ----- backup status (collapsible)
+        status_cf = CollapsingFrame(left_panel)
+        status_cf.pack(fill='x', pady=1)
+
+        ## container
+        status_frm = ttk.Frame(status_cf, padding=10)
+        status_frm.columnconfigure(1, weight=1)
+        status_cf.add(status_frm, title='Backup Status', style='secondary.TButton')
+
+        ## progress message
+        status_prog_lbl = ttk.Label(status_frm, textvariable='prog-message', font='Helvetica 10 bold')
+        status_prog_lbl.grid(row=0, column=0, columnspan=2, sticky='w')
+        self.setvar('prog-message', 'Backing up...')
+
+        ## progress bar
+        status_prog = ttk.Progressbar(status_frm, variable='prog-value', style='success.Horizontal.TProgressbar')
+        status_prog.grid(row=1, column=0, columnspan=2, sticky='ew', pady=(10, 5))
+        self.setvar('prog-value', 71)
+
+        # ---- right panel
+        right_panel = ttk.Frame(self, padding=(2, 1))
+        right_panel.pack(side='right', fill='both', expand='yes')
+
+        ## file input
+        browse_frm = ttk.Frame(right_panel)
+        browse_frm.pack(side='top', fill='x', padx=2, pady=1)
+        file_entry = ttk.Entry(browse_frm, textvariable='folder-path')
+        file_entry.pack(side='left', fill='x', expand='yes')
+        open_btn = ttk.Button(browse_frm, image='opened-folder', style='secondary.Link.TButton',
+                              command=self.get_directory)
+        open_btn.pack(side='right')
+
+        ## starting sample directory
+        file_entry.insert('end', 'D:/text/myfiles/top-secret/samples/')
+
+    def get_directory(self):
+        """Open dialogue to get directory and update directory variable"""
+        self.update_idletasks()
+        d = askdirectory()
+        if d:
+            self.setvar('folder-path', d)
+
+
+class CollapsingFrame(ttk.Frame):
+    """
+    A collapsible frame widget that opens and closes with a button click.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.columnconfigure(0, weight=1)
+        self.cumulative_rows = 0
+        self.images = [tkinter.PhotoImage(name='open', file='assets/icons8_double_up_24px.png'),
+                       tkinter.PhotoImage(name='closed', file='assets/icons8_double_right_24px.png')]
+
+    def add(self, child, title="", style='primary.TButton', **kwargs):
+        """Add a child to the collapsible frame
+
+        :param ttk.Frame child: the child frame to add to the widget
+        :param str title: the title appearing on the collapsible section header
+        :param str style: the ttk style to apply to the collapsible section header
+        """
+        if child.winfo_class() != 'TFrame':  # must be a frame
             return
-        if id.startswith('I'):
-            self.reveal_in_explorer(id)
+        style_color = style.split('.')[0]
+        frm = ttk.Frame(self, style=f'{style_color}.TFrame')
+        frm.grid(row=self.cumulative_rows, column=0, sticky='ew')
 
-    def right_click_tree(self, event=None):
-        """Callback for right-click tree menu"""
-        try:
-            id = self.tree.selection()[0]
-        except IndexError:
-            return
-        if id.startswith('I'):
-            self.menu.entryconfigure('Export results to csv', state='disabled')
-            self.menu.entryconfigure('Reveal in file manager', state='normal')
+        # header title
+        lbl = ttk.Label(frm, text=title, style=f'{style_color}.Inverse.TLabel')
+        if kwargs.get('textvariable'):
+            lbl.configure(textvariable=kwargs.get('textvariable'))
+        lbl.pack(side='left', fill='both', padx=10)
+
+        # header toggle button
+        btn = ttk.Button(frm, image='open', style=style, command=lambda c=child: self._toggle_open_close(child))
+        btn.pack(side='right')
+
+        # assign toggle button to child so that it's accesible when toggling (need to change image)
+        child.btn = btn
+        child.grid(row=self.cumulative_rows + 1, column=0, sticky='news')
+
+        # increment the row assignment
+        self.cumulative_rows += 2
+
+    def _toggle_open_close(self, child):
+        """
+        Open or close the section and change the toggle button image accordingly
+
+        :param ttk.Frame child: the child element to add or remove from grid manager
+        """
+        if child.winfo_viewable():
+            child.grid_remove()
+            child.btn.configure(image='closed')
         else:
-            self.menu.entryconfigure('Export results to csv', state='normal')
-            self.menu.entryconfigure('Reveal in file manager', state='disabled')
-        self.menu.post(event.x_root, event.y_root)
-
-    def on_search(self):
-        """Search for a term based on the search type"""
-        search_term = self.search_term_var.get()
-        search_path = self.search_path_var.get()
-        search_type = self.search_type_var.get()
-        if search_term == '':
-            return
-        Thread(target=SearchEngine.file_search, args=(search_term, search_path, search_type), daemon=True).start()
-        self.progressbar.start(10)
-        self.search_count += 1
-        id = self.tree.insert('', 'end', self.search_count, text=f'Search {self.search_count}')
-        self.tree.item(id, open=True)
-        self.check_queue(id)
-
-    def reveal_in_explorer(self, id):
-        """Callback for double-click event on tree"""
-        values = self.tree.item(id, 'values')
-        path = pathlib.Path(values[-1]).absolute().parent
-        pathlib.os.startfile(path)
-
-    def export_to_csv(self, event=None):
-        """Export values to csv file"""
-        try:
-            id = self.tree.selection()[0]
-        except IndexError:
-            return
-
-        filename = asksaveasfilename(initialfile='results.csv',
-                                     filetypes=[('Comma-separated', '*.csv'), ('Text', '*.txt')])
-        if filename:
-            with open(filename, mode='w', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(['Name', 'Modified date', 'Type', 'Size', 'Path'])
-                children = self.tree.get_children(id)
-                for child in children:
-                    name = [self.tree.item(child, 'text')]
-                    values = list(self.tree.item(child, 'values'))
-                    writer.writerow(name + values)
-        # open file in explorer
-        pathlib.os.startfile(filename)
-
-    def check_queue(self, id):
-        """Check file queue and print results if not empty"""
-        if searching and not file_queue.empty():
-            filename = file_queue.get()
-            self.insert_row(filename, id)
-            self.update_idletasks()
-            self.after(1, lambda: self.check_queue(id))
-        elif not searching and not file_queue.empty():
-            while not file_queue.empty():
-                filename = file_queue.get()
-                self.insert_row(filename, id)
-            self.update_idletasks()
-            self.progressbar.stop()
-        elif searching and file_queue.empty():
-            self.after(100, lambda: self.check_queue(id))
-        else:
-            self.progressbar.stop()
-
-    def insert_row(self, file, id):
-        """Insert new row in tree search results"""
-        try:
-            file_stats = file.stat()
-            file_name = file.stem
-            file_modified = datetime.datetime.fromtimestamp(file_stats.st_mtime).strftime('%m/%d/%Y %I:%M:%S%p')
-            file_type = file.suffix.lower()
-            file_size = SearchEngine.convert_size(file_stats.st_size)
-            file_path = file.absolute()
-            iid = self.tree.insert(id, 'end', text=file_name, values=(file_modified, file_type, file_size, file_path))
-            self.tree.selection_set(iid)
-            self.tree.see(iid)
-        except OSError:
-            return
-
-    @staticmethod
-    def file_search(term, search_path, search_type):
-        """Recursively search directory for matching files"""
-        SearchEngine.set_searching(1)
-        if search_type == 'contains':
-            SearchEngine.find_contains(term, search_path)
-        elif search_type == 'startswith':
-            SearchEngine.find_startswith(term, search_path)
-        elif search_type == 'endswith':
-            SearchEngine.find_endswith(term, search_path)
-
-    @staticmethod
-    def find_contains(term, search_path):
-        """Find all files that contain the search term"""
-        for path, _, files in pathlib.os.walk(search_path):
-            if files:
-                for file in files:
-                    if term in file:
-                        file_queue.put(pathlib.Path(path) / file)
-        SearchEngine.set_searching(False)
-
-    @staticmethod
-    def find_startswith(term, search_path):
-        """Find all files that start with the search term"""
-        for path, _, files in pathlib.os.walk(search_path):
-            if files:
-                for file in files:
-                    if file.startswith(term):
-                        file_queue.put(pathlib.Path(path) / file)
-        SearchEngine.set_searching(False)
-
-    @staticmethod
-    def find_endswith(term, search_path):
-        """Find all files that end with the search term"""
-        for path, _, files in pathlib.os.walk(search_path):
-            if files:
-                for file in files:
-                    if file.endswith(term):
-                        file_queue.put(pathlib.Path(path) / file)
-        SearchEngine.set_searching(False)
-
-    @staticmethod
-    def set_searching(state=False):
-        """Set searching status"""
-        global searching
-        searching = state
-
-    @staticmethod
-    def convert_size(size):
-        """Convert bytes to mb or kb depending on scale"""
-        kb = size // 1000
-        mb = round(kb / 1000, 1)
-        if kb > 1000:
-            return f'{mb:,.1f} MB'
-        else:
-            return f'{kb:,d} KB'
+            child.grid()
+            child.btn.configure(image='open')
 
 
 if __name__ == '__main__':
-    file_queue = Queue()
-    searching = False
     Application().mainloop()
