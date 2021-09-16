@@ -13,7 +13,7 @@ from qgui.manager import ICON_PATH
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 
 
-class BaseFrameTool:
+class BaseNotebookTool:
     def __init__(self,
                  bind_func,
                  style="primary",
@@ -36,7 +36,7 @@ class BaseFrameTool:
         pass
 
 
-class ChooseFileTextButton(BaseFrameTool):
+class ChooseFileTextButton(BaseNotebookTool):
     def __init__(self,
                  bind_func,
                  label_info: str = "目标文件路径：",
@@ -81,7 +81,7 @@ class ChooseFileTextButton(BaseFrameTool):
         return frame
 
 
-class RunButton(BaseFrameTool):
+class RunButton(BaseNotebookTool):
     def __init__(self, bind_func, text="开始执行", style="primary", tab_index=0):
         super(RunButton, self).__init__(bind_func, style, tab_index=tab_index)
         self.text = text
@@ -100,5 +100,5 @@ class RunButton(BaseFrameTool):
                          command=self.bind_func,
                          style="success.TButton")
 
-        btn.pack(anchor="ne", ipadx=5, ipady=5, padx=0, pady=1)
+        btn.pack(anchor="ne", padx=0, pady=1)
         return frame

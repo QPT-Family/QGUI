@@ -13,7 +13,7 @@ from tkinter.scrolledtext import ScrolledText
 
 from qgui.bar_tools import BaseBarTool
 from qgui.third_party.collapsing_frame import CollapsingFrame
-from qgui.notebook_tools import BaseFrameTool
+from qgui.notebook_tools import BaseNotebookTool
 
 BLACK = "#24262d"
 GRAY = "#e3e3e3"
@@ -59,7 +59,7 @@ class BaseNavigation(_Backbone):
 
         ttk.Label(bus_frm, text=f"作者:\t{author}", style="TLabel", justify="left").pack(anchor="nw")
         ttk.Label(bus_frm, text=f"版本:\t{version}", style="TLabel", justify="left").pack(anchor="nw")
-        
+
         if other_info:
             for line in other_info:
                 ttk.Label(bus_frm, text=line, style="TLabel").pack(anchor="nw")
@@ -116,7 +116,7 @@ class BaseNoteBook(_Backbone):
             stout = sys.stdout
         self.stout = stout
 
-    def add_tool(self, tool: BaseFrameTool):
+    def add_tool(self, tool: BaseNotebookTool):
         frame = self.nb_frames[tool.tab_index]
         tool.build(frame)
 

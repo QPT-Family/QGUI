@@ -10,7 +10,7 @@ from ttkbootstrap import Style
 from qgui.manager import QStyle
 from qgui.base import BaseNoteBook, BaseBanner, BaseNavigation
 from qgui.bar_tools import BaseBarTool
-from qgui.notebook_tools import BaseFrameTool
+from qgui.notebook_tools import BaseNotebookTool
 
 
 class CreateQGUI:
@@ -47,7 +47,7 @@ class CreateQGUI:
     def add_banner_tool(self, tool: BaseBarTool):
         self.banner.add_tool(tool)
 
-    def add_notebook_tool(self, tool: BaseFrameTool):
+    def add_notebook_tool(self, tool: BaseNotebookTool):
         self.notebook.add_tool(tool)
 
     def set_navigation_about(self,
