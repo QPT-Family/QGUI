@@ -1,10 +1,18 @@
-# Author: Acer Zhang
-# Datetime: 2021/9/15 
-# Copyright belongs to the author.
-# Please indicate the source for reprinting.
+"""
+    Author: Israel Dryer
+    Modified: 2021-04-23
+    Adapted for ttkbootstrap from: http://www.leo-backup.com/screenshots.shtml
+"""
+
+import os
 
 import tkinter
 from tkinter import ttk
+
+from qgui.manager import ICON_PATH
+
+DOUBLE_UP_ICON = os.path.join(ICON_PATH, "double_up.png")
+DOUBLE_DOWN_ICON = os.path.join(ICON_PATH, "double_down.png")
 
 
 class CollapsingFrame(ttk.Frame):
@@ -16,8 +24,10 @@ class CollapsingFrame(ttk.Frame):
         super().__init__(*args, **kwargs)
         self.columnconfigure(0, weight=1)
         self.cumulative_rows = 0
-        self.images = [tkinter.PhotoImage(name='open', file='/Users/zhanghongji/PycharmProjects/QGUI/qgui/resources/icon/play_w.png'),
-                       tkinter.PhotoImage(name='closed', file='/Users/zhanghongji/PycharmProjects/QGUI/qgui/resources/icon/play_w.png')]
+        self.images = [tkinter.PhotoImage(name='open',
+                                          file=DOUBLE_DOWN_ICON),
+                       tkinter.PhotoImage(name='closed',
+                                          file=DOUBLE_UP_ICON)]
 
     def add(self, child, title="", style='primary.TButton', **kwargs):
         """Add a child to the collapsible frame
