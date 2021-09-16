@@ -24,7 +24,7 @@ class CreateQGUI:
         self.title = title
         self.style = style
 
-        self.root = tkinter.Tk(title)
+        self.root = tkinter.Tk()
         if self.style:
             self.root.style = Style(self.style)
         else:
@@ -33,6 +33,7 @@ class CreateQGUI:
         self.root.style.configure('bg.TLabel', background=self.root.style.colors.inputbg)
         self.root.geometry("940x520")
         self.root.wm_resizable(False, False)
+        self.root.title = self.title
 
         # 初始化组件
         self.banner = banner if banner else BaseBanner(title=self.title)
