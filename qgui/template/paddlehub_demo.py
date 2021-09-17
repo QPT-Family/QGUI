@@ -39,10 +39,11 @@ main_gui = CreateQGUI(title="一个新应用")
 
 # 在界面最上方添加一个按钮，链接到GitHub主页
 main_gui.add_banner_tool(GitHub("https://github.com/QPT-Family/QGUI"))
-# 在主界面部分添加一个文件选择工具，绑定刚刚创建的函数吧~
+# 在主界面部分添加一个文件选择工具
 main_gui.add_notebook_tool(ChooseFileTextButton(name="文件输入框"))
+# 再加个文件夹选择工具
 main_gui.add_notebook_tool(ChooseDirTextButton(name="保存位置"))
-# 要不要再添加一个运行按钮？
+# 添加一个运行按钮
 main_gui.add_notebook_tool(RunButton(infer))
 # 简单加个简介
 main_gui.set_navigation_about(author="GT",
