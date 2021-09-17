@@ -235,7 +235,7 @@ class BaseBanner(_Backbone):
         black.pack(side="right", anchor="se")
         # 主标题
         title = ttk.Label(self.frame,
-                          font=(FONT, 30),
+                          font=(FONT, 25),
                           text=self.title,
                           style=self.style + ".Inverse.TLabel")
         title.pack(side="right", anchor="se", padx=5, pady=3)
