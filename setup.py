@@ -5,12 +5,13 @@
 
 from setuptools import setup
 from setuptools import find_packages
-from qgui import __version__
+
+# from qgui import __version__
 
 # python setup.py sdist bdist_wheel
 setup(
     name='QWebSite',
-    version=__version__,
+    version="0.0.1",
     packages=find_packages(),
     url='https://github.com/QPT-Family/QGUI',
     license='MIT',
