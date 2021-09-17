@@ -19,6 +19,8 @@ QGUI - 用模板来快捷制作出属于你的图形化界面
 * 国内推荐 ```python -m pip install qgui -i https://mirrors.bfsu.edu.cn/pypi/web/simple```
 
 ### 代码示例
+- [x] [以PaddleHub为例的完整示例](./qgui/template/paddlehub_demo.py)  
+
 简单示例
 
 ```python
