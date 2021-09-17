@@ -1,6 +1,6 @@
 # QGUI
 
-[![Downloads](https://static.pepy.tech/personalized-badge/QGUI?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Pypi%20User)](https://pepy.tech/project/qwebsite)
+[![Downloads](https://static.pepy.tech/personalized-badge/qgui?period=total&units=international_system&left_color=grey&right_color=orange&left_text=Pypi%20User)](https://pepy.tech/project/qgui)
 ![GitHub forks](https://img.shields.io/github/forks/QPT-Family/QGUI)
 ![GitHub Repo stars](https://img.shields.io/github/stars/QPT-Family/QGUI)
 ![GitHub](https://img.shields.io/github/license/QPT-Family/QGUI)
@@ -19,15 +19,16 @@ QGUI - 用模板来快捷制作出属于你的图形化界面
 * 国内推荐 ```python -m pip install qgui -i https://mirrors.bfsu.edu.cn/pypi/web/simple```
 
 ### 代码示例
-
+简单示例
 ```python
-from qgui.factory import CreateQGUI
+from qgui import CreateQGUI
 from qgui.bar_tools import BaseBarTool, GitHub
 from qgui.notebook_tools import ChooseFileTextButton, RunButton
 
 
-def click(*args):
-    print("你点到我啦~", args)
+def click(args):
+    print("你点到我啦~")
+    print("输入框文字为：", args["文件选择"]())
 
 
 # 创建主界面
@@ -37,9 +38,9 @@ main_gui = CreateQGUI(title="一个新应用")
 main_gui.add_banner_tool(GitHub("https://github.com/QPT-Family/QGUI"))
 # 要不试试自定义Banner按钮？
 main_gui.add_banner_tool(BaseBarTool(click, name="一个新组件"))
-# 在主界面部分添加一个文件选择工具，绑定刚刚创建的函数吧~
-main_gui.add_notebook_tool(ChooseFileTextButton(click))
-# 要不要再添加一个运行按钮？
+# 在主界面部分添加一个文件选择工具吧~
+main_gui.add_notebook_tool(ChooseFileTextButton(name="文件选择"))
+# 要不要再添加一个运行按钮？，绑定刚刚创建的函数吧~
 main_gui.add_notebook_tool(RunButton(click))
 # 简单加个简介
 main_gui.set_navigation_about(author="GT",

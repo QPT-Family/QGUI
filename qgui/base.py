@@ -26,6 +26,10 @@ TITLE_BG_COLOR = BLACK
 # ToDo 主题部分可考虑通过增加warmup来解决
 
 class _Backbone:
+    """
+    整个界面的基础，存放共有的变量
+    """
+
     def __init__(self, f_style="primary"):
         """
         请务必检查self.frame是否做了pack等定位操作，无操作将不会被显示
@@ -33,13 +37,19 @@ class _Backbone:
         """
         # 统一用place
         self.style = f_style
-        pass
 
-    def apply_root(self, master):
+        # 全局变量
+        self.global_info = dict()
+
+    def apply_root(self, master, global_info):
         self.frame = ttk.Frame(master, style=self.style + ".TFrame")
+        self.global_info = global_info
 
 
 class BaseNavigation(_Backbone):
+    """
+    左侧导航栏基本框架
+    """
 
     def __init__(self, style="primary"):
         super(BaseNavigation, self).__init__(f_style=style)
@@ -99,12 +109,16 @@ class BaseNavigation(_Backbone):
     #                      compound='left',
     #                      command=tool.bind_func)
     #     btn.pack(side='left', ipadx=5, ipady=5, padx=0, pady=1)
-    def apply_root(self, master):
-        super(BaseNavigation, self).apply_root(master)
+    def apply_root(self, master, global_info):
+        super(BaseNavigation, self).apply_root(master, global_info)
         self.frame.place(x=0, y=50, width=180, height=470)
 
 
 class BaseNoteBook(_Backbone):
+    """
+    中间Notebook部分框架
+    """
+
     def __init__(self,
                  style="primary",
                  tab_names: List[str] = None,
@@ -117,11 +131,21 @@ class BaseNoteBook(_Backbone):
         self.stout = stout
 
     def add_tool(self, tool: BaseNotebookTool):
+        if tool.tab_index >= len(self.nb_frames):
+            raise
         frame = self.nb_frames[tool.tab_index]
-        tool.build(frame)
 
-    def apply_root(self, master):
-        super(BaseNoteBook, self).apply_root(master)
+        tool_info = tool.get_info()
+        if tool_info:
+            for info in tool_info:
+                if info in self.global_info:
+                    self.global_info[info + "-QGUI-" + len(self.global_info)] = tool_info[info]
+                else:
+                    self.global_info[info] = tool_info[info]
+        tool.build(master=frame, global_info=self.global_info)
+
+    def apply_root(self, master, global_info):
+        super(BaseNoteBook, self).apply_root(master, global_info)
         self.frame.place(x=182, y=55, width=750, height=460)
         self.nb = ttk.Notebook(self.frame)
         self.nb.pack(side="top", fill="both", expand="yes")
@@ -169,24 +193,32 @@ class BaseBanner(_Backbone):
         self.img_info = dict()
         self.title = title
 
+    def _callback(self, func):
+        def render():
+            func(self.global_info)
+
+        return render
+
     def add_tool(self, tool: BaseBarTool):
         """
         添加小工具组件
         :param
         """
+
         self.img_info[tool.name] = tkinter.PhotoImage(name=tool.name,
                                                       file=tool.icon)
+
         btn = ttk.Button(self.frame,
                          text=tool.name,
                          image=tool.name,
                          compound='left',
-                         command=tool.bind_func,
+                         command=self._callback(tool.bind_func),
                          style=tool.style)
 
         btn.pack(side="left", ipadx=5, ipady=5, padx=0, pady=1)
 
-    def apply_root(self, master):
-        super(BaseBanner, self).apply_root(master)
+    def apply_root(self, master, global_info):
+        super(BaseBanner, self).apply_root(master, global_info)
         self.frame.place(x=0, y=0, width=940, height=50)
         # 占位标题
         black = tkinter.Frame(self.frame,
@@ -202,38 +234,4 @@ class BaseBanner(_Backbone):
 
 
 if __name__ == '__main__':
-    from qgui.factory import CreateQGUI
-    from notebook_tools import ChooseFileTextButton, RunButton
-    from qgui.bar_tools import RunTool, GitHub
-
-    _bw = CreateQGUI()
-
-    _bb = BaseBanner()
-    _bt = BaseNavigation()
-    _btab = BaseNoteBook()
-
-    _bb.apply_root(_bw)
-    _bt.apply_root(_bw)
-    _btab.apply_root(_bw)
-
-    _bb.add_tool(RunTool(lambda: print(1),
-                         name="开始运行",
-                         icon="/Users/zhanghongji/PycharmProjects/QGUI/qgui/resources/icon/play_w.png"))
-    _bb.add_tool(BaseBarTool(lambda: print(1),
-                             name="222",
-                             icon="/Users/zhanghongji/PycharmProjects/QGUI/qgui/resources/icon/play_w.png"))
-    _bb.add_tool(GitHub("https://github.com/QPT-Family/QGUI"))
-
-    _bt.add_info("一一一一一二二二二二三三三三三四四四四四")
-    _bt.add_about(other_info=["QGUI:\thhhh"], github_url="www.baidu.com")
-
-
-    def tmp_cb(text):
-        print(text)
-
-
-    _btab.add_tool(ChooseFileTextButton(tmp_cb))
-    _btab.add_tool(ChooseFileTextButton(tmp_cb))
-    _btab.add_tool(ChooseFileTextButton(tmp_cb))
-    _btab.add_tool(RunButton(lambda: print("RUN")))
-    _bw.mainloop()
+    pass

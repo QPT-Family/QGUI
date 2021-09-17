@@ -17,6 +17,8 @@ class CreateQGUI:
     def __init__(self,
                  title="未命名应用",
                  style=QStyle.default,
+                 stout=None,
+                 tab_names: List[str] = None,
                  banner: BaseBanner = None,
                  navigation: BaseNavigation = None,
                  notebook: BaseNoteBook = None):
@@ -38,11 +40,12 @@ class CreateQGUI:
         # 初始化组件
         self.banner = banner if banner else BaseBanner(title=self.title)
         self.navigation = navigation if navigation else BaseNavigation()
-        self.notebook = notebook if notebook else BaseNoteBook()
+        self.notebook = notebook if notebook else BaseNoteBook(tab_names=tab_names, stout=stout)
 
-        self.banner.apply_root(self.root)
-        self.navigation.apply_root(self.root)
-        self.notebook.apply_root(self.root)
+        # ToDo 做个 global_info管理器，目前信息只从Notebook中流出
+        self.banner.apply_root(self.root, self.notebook.global_info)
+        self.navigation.apply_root(self.root, self.notebook.global_info)
+        self.notebook.apply_root(self.root, self.notebook.global_info)
 
     def add_banner_tool(self, tool: BaseBarTool):
         self.banner.add_tool(tool)

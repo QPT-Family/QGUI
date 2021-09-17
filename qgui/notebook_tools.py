@@ -14,11 +14,14 @@ RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 
 
 class BaseNotebookTool:
+    """
+    基础Notebook工具集
+    """
     def __init__(self,
                  bind_func,
                  style="primary",
                  tab_index=0):
-        if not hasattr(bind_func, "__call__"):
+        if bind_func and not hasattr(bind_func, "__call__"):
             raise f"{__class__.__name__}的bind_func需具备__call__方法，建议在此传入函数对象或自行构建具备__call__方法的对象。\n" \
                   f"Example:\n" \
                   f"    def xxx():\n" \
@@ -31,14 +34,25 @@ class BaseNotebookTool:
         self.bind_func = bind_func
         self.style = style
         self.tab_index = tab_index
+        self.global_info = None
 
-    def build(self, *args, **kwargs) -> tkinter.Frame:
-        pass
+    def _callback(self, func):
+        def render():
+            func(self.global_info)
+
+        return render
+
+    def build(self, *args, **kwargs):
+        self.global_info = kwargs["global_info"]
+
+    def get_info(self) -> dict:
+        return dict()
 
 
 class ChooseFileTextButton(BaseNotebookTool):
     def __init__(self,
-                 bind_func,
+                 bind_func=None,
+                 name=None,
                  label_info: str = "目标文件路径：",
                  entry_info: str = "请选择文件路径",
                  button_info: str = "选择文件",
@@ -48,6 +62,7 @@ class ChooseFileTextButton(BaseNotebookTool):
 
         self.label_info = label_info
         self.button_info = button_info
+        self.name = name
 
         self.entry_var = tkinter.StringVar(value=entry_info)
 
@@ -61,8 +76,9 @@ class ChooseFileTextButton(BaseNotebookTool):
 
         return render
 
-    def build(self, master) -> tkinter.Frame:
-        frame = ttk.Frame(master, style="TFrame")
+    def build(self, **kwargs) -> tkinter.Frame:
+        super(ChooseFileTextButton, self).build(**kwargs)
+        frame = ttk.Frame(kwargs["master"], style="TFrame")
         frame.pack(side="top", fill="x", padx=5, pady=2)
         label = ttk.Label(frame,
                           text=self.label_info,
@@ -73,12 +89,21 @@ class ChooseFileTextButton(BaseNotebookTool):
                           textvariable=self.entry_var)
         entry.pack(side="left", fill="x", expand="yes", padx=5, pady=2)
 
+        command = self._callback(self.bind_func) if self.bind_func else self._callback(lambda x: print(f"文件{x}被选取"))
         button = ttk.Button(frame,
                             text=self.button_info,
                             style=self.style + ".TButton",
-                            command=self._callback(self.bind_func))
+                            command=command)
         button.pack(side="right")
         return frame
+
+    def get_info(self) -> dict:
+        field = self.name if self.name else self.__class__.__name__
+
+        def reader():
+            return self.entry_var.get()
+
+        return {field: reader}
 
 
 class RunButton(BaseNotebookTool):
@@ -88,8 +113,9 @@ class RunButton(BaseNotebookTool):
 
         self.icon = None
 
-    def build(self, master) -> tkinter.Frame:
-        frame = ttk.Frame(master, style="TFrame")
+    def build(self, **kwargs) -> tkinter.Frame:
+        super(RunButton, self).build(**kwargs)
+        frame = ttk.Frame(kwargs["master"], style="TFrame")
         frame.pack(side="top", fill="x", padx=5, pady=5)
         self.icon = tkinter.PhotoImage(name=self.text,
                                        file=RUN_ICON)
@@ -97,7 +123,7 @@ class RunButton(BaseNotebookTool):
                          text=self.text,
                          image=self.text,
                          compound='left',
-                         command=self.bind_func,
+                         command=self._callback(self.bind_func),
                          style="success.TButton")
 
         btn.pack(anchor="ne", padx=0, pady=1)
