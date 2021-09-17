@@ -5,8 +5,8 @@
 import os
 
 from qgui import CreateQGUI
-from qgui.bar_tools import BaseBarTool, GitHub
-from qgui.notebook_tools import ChooseFileTextButton, RunButton
+from qgui.bar_tools import GitHub
+from qgui.notebook_tools import ChooseFileTextButton, ChooseDirTextButton, RunButton
 from qgui import MessageBox
 
 import paddlehub as hub
@@ -15,9 +15,9 @@ import cv2
 human_seg = hub.Module(name="deeplabv3p_xception65_humanseg")
 
 
-def infer(info):
-    img_path = info["img_path"]
-    out_path = info["out_path"]
+def infer(args):
+    img_path = args["文件输入框"]()
+    out_path = args["保存位置"]()
 
     # 简单做个判断，保证输入是正确的
     if not os.path.exists(img_path):
@@ -28,9 +28,10 @@ def infer(info):
         MessageBox.info("请选择图片保存目录")
         return 2
 
-    result = human_seg.segmentation(images=[cv2.imread(img_path)],
-                                    visualization=True,
-                                    output_dir=out_path)
+    human_seg.segmentation(images=[cv2.imread(img_path)],
+                           visualization=True,
+                           output_dir=out_path)
+    print("处理完毕")
 
 
 # 创建主界面
@@ -39,7 +40,8 @@ main_gui = CreateQGUI(title="一个新应用")
 # 在界面最上方添加一个按钮，链接到GitHub主页
 main_gui.add_banner_tool(GitHub("https://github.com/QPT-Family/QGUI"))
 # 在主界面部分添加一个文件选择工具，绑定刚刚创建的函数吧~
-main_gui.add_notebook_tool(ChooseFileTextButton())
+main_gui.add_notebook_tool(ChooseFileTextButton(name="文件输入框"))
+main_gui.add_notebook_tool(ChooseDirTextButton(name="保存位置"))
 # 要不要再添加一个运行按钮？
 main_gui.add_notebook_tool(RunButton(infer))
 # 简单加个简介

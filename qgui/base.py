@@ -5,6 +5,7 @@
 
 import sys
 import webbrowser
+import time
 from typing import List
 
 import tkinter
@@ -14,6 +15,7 @@ from tkinter.scrolledtext import ScrolledText
 from qgui.bar_tools import BaseBarTool
 from qgui.third_party.collapsing_frame import CollapsingFrame
 from qgui.notebook_tools import BaseNotebookTool
+from qgui.os_tools import StdOutWrapper
 
 BLACK = "#24262d"
 GRAY = "#e3e3e3"
@@ -122,13 +124,13 @@ class BaseNoteBook(_Backbone):
     def __init__(self,
                  style="primary",
                  tab_names: List[str] = None,
-                 stout=None):
+                 stdout=None):
         super(BaseNoteBook, self).__init__(f_style=style)
         self.tab_names = tab_names
         self.nb_frames = list()
-        if not stout:
-            stout = sys.stdout
-        self.stout = stout
+        if not stdout:
+            stdout = sys.stdout
+        self.stdout = stdout
 
     def add_tool(self, tool: BaseNotebookTool):
         if tool.tab_index >= len(self.nb_frames):
@@ -182,7 +184,13 @@ class BaseNoteBook(_Backbone):
                                       highlightthickness=1)
         self.text_area.pack(fill="both", expand="yes")
 
-        self.text_area.insert("end", "控制台链接成功")
+        def _write_log_callback(text):
+            if text and text != "\n":
+                text = time.strftime("%H:%M:%S", time.localtime()) + "\t" + text
+            self.text_area.insert("end", text)
+
+        sys.stdout = StdOutWrapper(self.stdout, callback=_write_log_callback)
+        self.text_area.insert("end", "控制台链接成功\n")
 
 
 class BaseBanner(_Backbone):

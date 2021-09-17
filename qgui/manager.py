@@ -33,3 +33,6 @@ class MessageBox:
     @staticmethod
     def erroe(text: str, title: str = "错误 - QGUI"):
         messagebox.showerror(title, text)
+
+
+

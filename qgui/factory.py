@@ -40,7 +40,7 @@ class CreateQGUI:
         # 初始化组件
         self.banner = banner if banner else BaseBanner(title=self.title)
         self.navigation = navigation if navigation else BaseNavigation()
-        self.notebook = notebook if notebook else BaseNoteBook(tab_names=tab_names, stout=stout)
+        self.notebook = notebook if notebook else BaseNoteBook(tab_names=tab_names, stdout=stout)
 
         # ToDo 做个 global_info管理器，目前信息只从Notebook中流出
         self.banner.apply_root(self.root, self.notebook.global_info)
@@ -75,10 +75,10 @@ class CreateQGUI:
 
 if __name__ == '__main__':
     from qgui.bar_tools import BaseBarTool
-    from qgui.notebook_tools import ChooseFileTextButton
+    from qgui.notebook_tools import BaseChooseFileTextButton
 
     _tmp = CreateQGUI()
     _tmp.add_banner_tool(BaseBarTool(lambda: print(0)))
-    _tmp.add_notebook_tool(ChooseFileTextButton(lambda: print(1)))
+    _tmp.add_notebook_tool(BaseChooseFileTextButton(lambda: print(1)))
     _tmp.set_navigation_about()
     _tmp.run()

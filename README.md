@@ -20,6 +20,7 @@ QGUI - 用模板来快捷制作出属于你的图形化界面
 
 ### 代码示例
 简单示例
+
 ```python
 from qgui import CreateQGUI
 from qgui.bar_tools import BaseBarTool, GitHub
