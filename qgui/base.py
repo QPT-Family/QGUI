@@ -20,7 +20,7 @@ from qgui.os_tools import StdOutWrapper
 BLACK = "#24262d"
 GRAY = "#e3e3e3"
 GREEN = "#76b67e"
-FONT = "黑体-简"
+FONT = "黑体"
 
 TITLE_BG_COLOR = BLACK
 
