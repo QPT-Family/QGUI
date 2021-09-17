@@ -6,7 +6,7 @@
 from setuptools import setup
 from setuptools import find_packages
 
-from qgui.__version__ import __version__
+from __version__ import __version__
 
 # python setup.py sdist bdist_wheel
 setup(
