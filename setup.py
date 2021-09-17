@@ -10,7 +10,7 @@ from qgui.__version__ import __version__
 
 # python setup.py sdist bdist_wheel
 setup(
-    name='QWebSite',
+    name='QGUI',
     version=__version__,
     packages=find_packages(),
     url='https://github.com/QPT-Family/QGUI',
