@@ -1,8 +1,6 @@
 # Author: Acer Zhang
-# Datetime: 2021/9/16 
+# Datetime: 2021/9/17 
 # Copyright belongs to the author.
 # Please indicate the source for reprinting.
 
-from qgui.factory import CreateQGUI
-
-from qgui.manager import *
+__version__ = "0.0.2"
