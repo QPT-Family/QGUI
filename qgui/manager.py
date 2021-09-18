@@ -35,4 +35,7 @@ class MessageBox:
         messagebox.showerror(title, text)
 
 
-
+BLACK = "#24262d"
+GRAY = "#e3e3e3"
+GREEN = "#76b67e"
+FONT = "黑体"

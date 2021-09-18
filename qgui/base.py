@@ -12,15 +12,11 @@ import tkinter
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 
+from qgui.manager import BLACK, FONT
 from qgui.bar_tools import BaseBarTool
 from qgui.third_party.collapsing_frame import CollapsingFrame
 from qgui.notebook_tools import BaseNotebookTool
 from qgui.os_tools import StdOutWrapper
-
-BLACK = "#24262d"
-GRAY = "#e3e3e3"
-GREEN = "#76b67e"
-FONT = "黑体"
 
 TITLE_BG_COLOR = BLACK
 
@@ -69,8 +65,8 @@ class BaseNavigation(_Backbone):
         bus_frm.columnconfigure(1, weight=1)
         bus_cf.add(bus_frm, title="相关信息", style='secondary.TButton')
 
-        ttk.Label(bus_frm, text=f"作者:\t{author}", style="TLabel", justify="left").pack(anchor="nw")
-        ttk.Label(bus_frm, text=f"版本:\t{version}", style="TLabel", justify="left").pack(anchor="nw")
+        ttk.Label(bus_frm, text=f"作者:\t{author}", style="TLabel", justify="left", wraplength=160).pack(anchor="nw")
+        ttk.Label(bus_frm, text=f"版本:\t{version}", style="TLabel", justify="left", wraplength=160).pack(anchor="nw")
 
         if other_info:
             for line in other_info:
@@ -85,8 +81,7 @@ class BaseNavigation(_Backbone):
             github_label.bind("<Button-1>", github_callback)
 
     def add_info(self,
-                 info: str,
-                 split_len=15):
+                 info: str):
         bus_cf = CollapsingFrame(self.frame)
         bus_cf.pack(fill='x', pady=0)
 
@@ -94,15 +89,7 @@ class BaseNavigation(_Backbone):
         bus_frm.columnconfigure(1, weight=1)
         bus_cf.add(bus_frm, title="项目简介", style='secondary.TButton', justify="left")
 
-        new_info = str()
-        if split_len:
-            for row in range(len(info) // split_len):
-                new_info += info[row * split_len:(row + 1) * split_len] + "\n"
-            else:
-                new_info += info[(len(info) // split_len) * split_len:]
-        else:
-            new_info = info
-        ttk.Label(bus_frm, text=new_info, style="TLabel").pack(anchor="nw")
+        ttk.Label(bus_frm, text=info, style="TLabel", wraplength=160).pack(anchor="nw")
 
     # def add_homepage(self, tool):
     #     btn = ttk.Button(self.frame,
@@ -150,7 +137,7 @@ class BaseNoteBook(_Backbone):
         super(BaseNoteBook, self).apply_root(master, global_info)
         self.frame.place(x=182, y=55, width=750, height=460)
         self.nb = ttk.Notebook(self.frame)
-        self.nb.pack(side="top", fill="both", expand="yes")
+        self.nb.pack(side="top", fill="both")
 
         if self.tab_names:
             for tab_name in self.tab_names:
@@ -167,7 +154,7 @@ class BaseNoteBook(_Backbone):
         # 增加OutPut
         self.console_frame = ttk.Frame(self.frame,
                                        style=self.style + ".TFrame")
-        self.console_frame.pack(side="top", fill='both')
+        self.console_frame.pack(side="top", fill='both', expand="yes")
 
         # 标题
         self.title = ttk.Label(self.console_frame,
@@ -175,22 +162,27 @@ class BaseNoteBook(_Backbone):
                                style=self.style + ".Inverse.TLabel",
                                text="控制台日志",
                                justify="left")
-        self.title.pack(side="top", fill="x", expand="yes", padx=10, pady=5)
+        self.title.pack(side="top", fill="x", padx=10, pady=5)
 
         # 文本
         self.text_area = ScrolledText(self.console_frame,
                                       highlightcolor=master.style.colors.primary,
                                       highlightbackground=master.style.colors.border,
                                       highlightthickness=1)
+
         self.text_area.pack(fill="both", expand="yes")
 
         def _write_log_callback(text):
             if text and text != "\n":
                 text = time.strftime("%H:%M:%S", time.localtime()) + "\t" + text
+            self.text_area.configure(state="normal")
             self.text_area.insert("end", text)
+            self.text_area.configure(state="disable")
 
         sys.stdout = StdOutWrapper(self.stdout, callback=_write_log_callback)
+        # sys.stderr = StdOutWrapper(sys.stderr, callback=_write_log_callback)
         self.text_area.insert("end", "控制台链接成功\n")
+        self.text_area.configure(state="disable")
 
 
 class BaseBanner(_Backbone):

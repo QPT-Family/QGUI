@@ -35,7 +35,7 @@ class CreateQGUI:
         self.root.style.configure('bg.TLabel', background=self.root.style.colors.inputbg)
         self.root.geometry("940x520")
         self.root.wm_resizable(False, False)
-        self.root.title = self.title
+        self.root.title(self.title)
 
         # 初始化组件
         self.banner = banner if banner else BaseBanner(title=self.title)
@@ -64,10 +64,8 @@ class CreateQGUI:
                                   other_info=other_info)
 
     def set_navigation_info(self,
-                            info: str,
-                            split_len=15):
-        self.navigation.add_info(info=info,
-                                 split_len=split_len)
+                            info: str):
+        self.navigation.add_info(info=info)
 
     def run(self):
         self.root.mainloop()
