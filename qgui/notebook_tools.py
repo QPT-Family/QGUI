@@ -279,10 +279,10 @@ class InputBox(BaseNotebookTool):
     def get_info(self) -> dict:
         field = self.name if self.name else self.__class__.__name__
 
-        def reader():
+        def render():
             return self.input_vars.get()
 
-        return {field: reader}
+        return {field: render}
 
 
 class Combobox(BaseNotebookTool):
@@ -312,6 +312,8 @@ class Combobox(BaseNotebookTool):
         self.comb = ttk.Combobox(self.master,
                                  style=self.style + ".TCombobox",
                                  values=self.options)
+        self.comb.current(0)
+
         self.comb.pack(side="left", fill="x", padx=5, pady=2)
 
         return frame
@@ -319,7 +321,7 @@ class Combobox(BaseNotebookTool):
     def get_info(self) -> dict:
         field = self.name if self.name else self.__class__.__name__
 
-        def reader():
+        def render():
             return self.comb.get()
 
-        return {field: reader}
+        return {field: render}
