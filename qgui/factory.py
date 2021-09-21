@@ -5,10 +5,12 @@
 from typing import List
 
 import tkinter
+import tkinter.font
+
 from ttkbootstrap import Style
 
-from qgui.manager import QStyle
-from qgui.base import BaseNoteBook, BaseBanner, BaseNavigation
+from qgui.manager import QStyle, FONT
+from qgui.base_frame import BaseNoteBook, BaseBanner, BaseNavigation
 from qgui.bar_tools import BaseBarTool
 from qgui.notebook_tools import BaseNotebookTool
 
@@ -33,6 +35,9 @@ class CreateQGUI:
             self.root.style = Style()
         self.root.style.configure('bg.TFrame', background=self.root.style.colors.inputbg)
         self.root.style.configure('bg.TLabel', background=self.root.style.colors.inputbg)
+        default_font = tkinter.font.nametofont("TkDefaultFont")
+        default_font.configure(family=FONT, size=10)
+        self.root.option_add("*Font", "TkDefaultFont")
         self.root.geometry("940x520")
         self.root.wm_resizable(False, False)
         self.root.title(self.title)

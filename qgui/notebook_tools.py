@@ -12,11 +12,13 @@ from tkinter import ttk
 from tkinter import filedialog
 
 from qgui.manager import ICON_PATH, FONT
+from qgui.base_tools import select_var_dtype
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 
 LEFT_PAD_LEN = 10
-INPUT_BOX_LEN = 86
+LABEL_WIDTH = 16
+INPUT_BOX_LEN = 70
 
 
 class BaseNotebookTool:
@@ -137,7 +139,7 @@ class BaseChooseFileTextButton(BaseNotebookTool):
         label = ttk.Label(frame,
                           text=self.label_info,
                           style="TLabel",
-                          width=16)
+                          width=LABEL_WIDTH)
         label.pack(side="left")
         entry = ttk.Entry(frame,
                           style=self.style + ".info.TEntry",
@@ -266,7 +268,7 @@ class InputBox(BaseNotebookTool):
         label = ttk.Label(frame,
                           text=self.label_info,
                           style="TLabel",
-                          width=16)
+                          width=LABEL_WIDTH)
         label.pack(side="left")
 
         entry = ttk.Entry(frame,
@@ -288,7 +290,7 @@ class InputBox(BaseNotebookTool):
 class Combobox(BaseNotebookTool):
     def __init__(self,
                  name=None,
-                 title: str = None,
+                 title: str = "请下拉选择",
                  options: List[str] = None,
                  style="custom",
                  tab_index=0):
@@ -307,14 +309,14 @@ class Combobox(BaseNotebookTool):
         label = ttk.Label(frame,
                           text=self.title,
                           style="TLabel",
-                          width=16)
+                          width=LABEL_WIDTH)
         label.pack(side="left")
-        self.comb = ttk.Combobox(self.master,
+        self.comb = ttk.Combobox(frame,
                                  style=self.style + ".TCombobox",
                                  values=self.options)
         self.comb.current(0)
 
-        self.comb.pack(side="left", fill="x", padx=5, pady=2)
+        self.comb.pack(side="left", padx=5, pady=2)
 
         return frame
 
@@ -323,5 +325,67 @@ class Combobox(BaseNotebookTool):
 
         def render():
             return self.comb.get()
+
+        return {field: render}
+
+
+class Slider(BaseNotebookTool):
+    def __init__(self,
+                 name=None,
+                 title: str = "请拖动滑块",
+                 default: int = 0,
+                 min_size: int = 0,
+                 max_size: int = 100,
+                 dtype=int,
+                 style="primary",
+                 tab_index=0):
+        super().__init__(name=name,
+                         style=style,
+                         tab_index=tab_index)
+        self.title = title
+        self.default = default
+        self.min_size = min_size
+        self.max_size = max_size
+        self.dtype = dtype
+
+    def slider_var_trace(self, *args):
+        v = self.scale.get()
+        self.value_var.set(f"当前值 {self.dtype(v)}")
+
+    def build(self, **kwargs):
+        super().build(**kwargs)
+
+        frame = ttk.Frame(self.master, style="TFrame")
+
+        self.slider_var = select_var_dtype(self.dtype)(frame, value=self.default)
+        self.value_var = tkinter.StringVar(frame, value=f"当前值 {self.default}")
+        self.slider_var.trace("w", self.slider_var_trace)
+        frame.pack(side="top", fill="x", padx=5, pady=5)
+        label = ttk.Label(frame,
+                          text=self.title,
+                          style="TLabel",
+                          width=LABEL_WIDTH)
+        label.pack(side="left")
+        self.scale = ttk.Scale(frame,
+                               from_=self.min_size,
+                               to=self.max_size,
+                               value=self.default,
+                               variable=self.slider_var,
+                               length=500)
+        # ToDo ttk 的Bug
+        # self.scale.configure(style="info.TSlider")
+        self.scale.pack(side="left", padx=5, fill="x")
+        self.value = ttk.Label(frame,
+                               textvariable=self.value_var,
+                               style="TLabel",
+                               width=LABEL_WIDTH)
+        self.value.pack(side="right")
+        return frame
+
+    def get_info(self) -> dict:
+        field = self.name if self.name else self.__class__.__name__
+
+        def render():
+            return self.dtype(self.scale.get())
 
         return {field: render}

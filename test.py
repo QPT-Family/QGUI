@@ -1,6 +1,6 @@
 from qgui import CreateQGUI
 from qgui.bar_tools import BaseBarTool, GitHub
-from qgui.notebook_tools import ChooseFileTextButton, RunButton, ChooseDirTextButton, InputBox, Combobox
+from qgui.notebook_tools import *
 
 
 def click(args: dict):
@@ -19,9 +19,10 @@ main_gui.add_banner_tool(BaseBarTool(click, name="一个新组件"))
 # 在主界面部分添加一个文件选择工具吧~
 main_gui.add_notebook_tool(ChooseFileTextButton(name="文件选择"))
 # 再加个文件夹选择工具
-main_gui.add_notebook_tool(ChooseDirTextButton(name="保存位置"))
+# main_gui.add_notebook_tool(ChooseDirTextButton(name="保存位置"))
 main_gui.add_notebook_tool(InputBox())
 main_gui.add_notebook_tool(Combobox(options=["11111", "21221"]))
+main_gui.add_notebook_tool(Slider(default=4))
 # 要不要再添加一个运行按钮？，绑定刚刚创建的函数吧~
 main_gui.add_notebook_tool(RunButton(click))
 # 简单加个简介

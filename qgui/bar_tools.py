@@ -70,5 +70,5 @@ class GitHub(BaseBarTool):
                          style=style)
         self.github_url = url
 
-    def github_callback(self):
+    def github_callback(self, args):
         webbrowser.open_new(self.github_url)
