@@ -9,9 +9,17 @@ from tkinter import messagebox
 
 import qgui
 
+# 资源部分
 QGUI_BASE_PATH = os.path.dirname(qgui.__file__)
 RESOURCES_PATH = os.path.join(QGUI_BASE_PATH, "resources")
 ICON_PATH = os.path.join(RESOURCES_PATH, "icon")
+
+
+# Tools部分
+class ConcurrencyModeFlag:
+    # QUEUE_ = "触发后相关事件会以队列的形式执行"
+    SAFE_CONCURRENCY_MODE_FLAG = "不允许并发，禁止触发下一个事件"
+    # FORCE_CONCURRENCY_MODE_FLAG = "不允许并发，下一个事件被触发时结束上一个事件"
 
 
 class QStyle:

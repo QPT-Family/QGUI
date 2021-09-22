@@ -5,14 +5,15 @@
 import os
 import threading
 import traceback
-from typing import List
+from typing import List, Dict, Tuple
+from collections import OrderedDict
 
 import tkinter
 from tkinter import ttk
 from tkinter import filedialog
 
 from qgui.manager import ICON_PATH
-from qgui.base_tools import select_var_dtype, check_callable, ArgInfo
+from qgui.base_tools import ConcurrencyModeFlag, check_callable, ArgInfo, select_var_dtype
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 
@@ -23,67 +24,86 @@ INPUT_BOX_LEN = 70
 
 class BaseNotebookTool:
     """
-    基础Notebook工具集，提供基础异步Clallback
-    若需返回信息，请重写get_info方法->{name:info闭包}
+    基础Notebook工具集，提供基础异步Callback
+    1. 写Build，记得继承才会有self.master，继承时候传**kwargs
+    2. 若需返回信息，请重写get_info方法->ArgInfo
+    3. 如绑定func，需要封装Callback
     """
 
     def __init__(self,
                  bind_func=None,
-                 name=None,
-                 style="primary",
-                 tab_index=0,
-                 async_run=False,
-                 allow_concurrency=False):
+                 name: str = None,
+                 style: str = "primary",
+                 tab_index: int = 0,
+                 async_run: bool = False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
         check_callable(bind_func)
         self.bind_func = bind_func
         self.name = name
         self.style = style
         self.tab_index = tab_index
         self.async_run = async_run
-        self.allow_concurrency = allow_concurrency
+        # 控制并发模式
+        self.concurrency_mode = concurrency_mode
 
         # 占位符
         self.global_info = None
         self.master = None
 
-        # 避免重复点击的Flag
+        # 重复点击的Flag
         self.async_run_event = threading.Event()
+        self.thread_pool = list()
 
     def _callback(self, func, start_func=None, end_func=None):
-        if not self.async_run:
-            def render():
-                if start_func:
-                    start_func()
-                func(self.global_info.get_info())
-                if end_func:
-                    end_func()
-        else:
-            def render():
-                if start_func:
-                    # 若不允许并发则在启动时加Flag
-                    if not self.allow_concurrency:
-                        if self.async_run_event.is_set():
-                            return lambda: print("当前设置为禁止并发，请勿重复点击")
-                        else:
-                            self.async_run_event.set()
-                    start_func()
-
-                def new_func(obj):
-                    try:
-                        func(obj)
-                    except Exception as e:
-                        print("-----以下为异常信息-----")
-                        print(traceback.print_exc())
-                        print("-----以上为异常信息-----")
+        """
+        支持同步和异步的Callback
+        :param func: 函数对象
+        :param start_func: 开始前的函数对象
+        :param end_func: 结束后的函数对象
+        """
+        if func:
+            if not self.async_run:
+                def render():
+                    if start_func:
+                        start_func()
+                    func(self.global_info.get_info())
                     if end_func:
                         end_func()
-                    # 清除Flag，此时按钮可以再次点击
-                    self.async_run_event.clear()
+            else:
+                def render():
+                    # 若不允许并发则在启动时加Flag
+                    if self.async_run_event.is_set():
+                        if self.concurrency_mode == ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG:
+                            return lambda: print("当前设置为禁止并发，请勿重复点击，因为点了也没用")
+                    else:
+                        self.async_run_event.set()
 
-                t = threading.Thread(target=new_func, args=(self.global_info.get_info(),))
-                t.setDaemon(True)
-                t.start()
-        return render
+                    if start_func:
+                        start_func()
+
+                    def new_func(obj):
+                        try:
+                            func(obj)
+                        except Exception as e:
+                            print("-----以下为异常信息-----")
+                            print(traceback.print_exc())
+                            print("-----以上为异常信息-----")
+                        if end_func:
+                            end_func()
+                        # 清除Flag，此时按钮可以再次点击
+                        self.async_run_event.clear()
+
+                    t = threading.Thread(target=new_func, args=(self.global_info.get_info(),))
+                    t.setDaemon(True)
+                    t.start()
+
+                    self.thread_pool.append(t)
+            return render
+        else:
+            def none():
+                pass
+
+            return none
 
     def build(self, *args, **kwargs):
         self.global_info = kwargs["global_info"]
@@ -96,13 +116,14 @@ class BaseNotebookTool:
 class BaseChooseFileTextButton(BaseNotebookTool):
     def __init__(self,
                  bind_func=None,
-                 name=None,
+                 name: str = None,
                  label_info: str = "目标文件路径",
                  entry_info: str = "请选择文件路径",
                  button_info: str = "选 择 文 件 ",
-                 style="primary",
-                 tab_index=0):
-        super().__init__(bind_func, name=name, style=style, tab_index=tab_index)
+                 style: str = "primary",
+                 tab_index: int = 0,
+                 async_run: bool = False):
+        super().__init__(bind_func, name=name, style=style, tab_index=tab_index, async_run=async_run)
 
         self.label_info = label_info
         self.button_info = button_info
@@ -156,13 +177,14 @@ class BaseChooseFileTextButton(BaseNotebookTool):
 class ChooseFileTextButton(BaseChooseFileTextButton):
     def __init__(self,
                  bind_func=None,
-                 name=None,
+                 name: str = None,
                  label_info: str = "目标文件路径",
                  entry_info: str = "请选择文件路径",
                  button_info: str = "选 择 文 件",
-                 filetypes=None,
-                 style="primary",
-                 tab_index=0):
+                 filetypes: bool = None,
+                 style: str = "primary",
+                 tab_index: int = 0,
+                 async_run: bool = False):
         self.filetypes = [('All Files', '*')] if filetypes is None else filetypes
 
         super().__init__(bind_func=bind_func,
@@ -171,7 +193,8 @@ class ChooseFileTextButton(BaseChooseFileTextButton):
                          entry_info=entry_info,
                          button_info=button_info,
                          style=style,
-                         tab_index=tab_index)
+                         tab_index=tab_index,
+                         async_run=async_run)
 
 
 class ChooseDirTextButton(BaseChooseFileTextButton):
@@ -181,15 +204,17 @@ class ChooseDirTextButton(BaseChooseFileTextButton):
                  label_info: str = "目标文件夹路径",
                  entry_info: str = "请选择文件夹路径",
                  button_info: str = "选择文件夹",
-                 style="primary",
-                 tab_index=0):
+                 style: str = "primary",
+                 tab_index: int = 0,
+                 async_run: bool = False):
         super().__init__(bind_func=bind_func,
                          name=name,
                          label_info=label_info,
                          entry_info=entry_info,
                          button_info=button_info,
                          style=style,
-                         tab_index=tab_index)
+                         tab_index=tab_index,
+                         async_run=async_run)
 
     def _callback(self, func, start_func=None, end_func=None):
         def render():
@@ -202,12 +227,18 @@ class ChooseDirTextButton(BaseChooseFileTextButton):
 
 
 class RunButton(BaseNotebookTool):
-    def __init__(self, bind_func, text="开始执行", async_run=True, style="primary", tab_index=0, allow_concurrency=False):
+    def __init__(self,
+                 bind_func,
+                 text: str = "开始执行",
+                 async_run: bool = True,
+                 style: str = "primary",
+                 tab_index: int = 0,
+                 concurrency_mode: bool = False):
         super(RunButton, self).__init__(bind_func,
                                         style,
                                         tab_index=tab_index,
                                         async_run=async_run,
-                                        allow_concurrency=allow_concurrency)
+                                        concurrency_mode=concurrency_mode)
         self.text = text
 
         self.icon = None
@@ -276,12 +307,14 @@ class InputBox(BaseNotebookTool):
 
 class Combobox(BaseNotebookTool):
     def __init__(self,
+                 bind_func=None,
                  name=None,
                  title: str = "请下拉选择",
                  options: List[str] = None,
                  style="custom",
                  tab_index=0):
-        super().__init__(name=name,
+        super().__init__(bind_func=bind_func,
+                         name=name,
                          style=style,
                          tab_index=tab_index)
         self.title = title
@@ -302,7 +335,7 @@ class Combobox(BaseNotebookTool):
                                  style=self.style + ".TCombobox",
                                  values=self.options)
         self.comb.current(0)
-
+        self.comb.bind('<<ComboboxSelected>>', self._callback(self.bind_func))
         self.comb.pack(side="left", padx=5, pady=2)
 
         return frame
@@ -372,3 +405,156 @@ class Slider(BaseNotebookTool):
         arg_info = ArgInfo(name=field, set_func=self.scale.set, get_func=self.scale.get)
 
         return arg_info
+
+
+class BaseCheckButton(BaseNotebookTool):
+    def __init__(self,
+                 options: str or Tuple[str, bool] or List[Tuple[str, bool]],
+                 bind_func=None,
+                 name=None,
+                 title="请选择",
+                 style="primary",
+                 button_style=".TCheckbutton",
+                 tab_index=0,
+                 async_run=False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 mode=None):
+        super().__init__(bind_func=bind_func,
+                         name=name,
+                         style=style,
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode)
+        self.title = title
+        self.mode = mode
+        if isinstance(options, str):
+            self.options = {options: 0}
+        if isinstance(options, tuple):
+            self.options = {options[0]: 1 if options[1] else 0}
+        if isinstance(options, list):
+            self.options = OrderedDict()
+            if len(options[0]) != 2:
+                raise TypeError(f"{self.__class__.__name__}的options参数需要为str or List[Tuple[str, bool]]格式\n"
+                                f"Example:\n"
+                                f"'选择框1' or [('选择1', 0), ('选择2', 1), ('选择3', 0)]")
+            for option in options:
+                self.options[option[0]] = 1 if option[1] else 0
+        self.button_style = button_style
+
+    def build(self, *args, **kwargs):
+        super().build(*args, **kwargs)
+        frame = ttk.Frame(self.master, style="TFrame")
+
+        frame.pack(side="top", fill="x", padx=5, pady=5)
+        label = ttk.Label(frame,
+                          text=self.title,
+                          style="TLabel",
+                          width=LABEL_WIDTH)
+        label.pack(side="left")
+
+        self.value_vars = dict()
+        for option in self.options:
+            self.value_vars[option] = tkinter.StringVar(frame, value=self.options[option])
+            if self.mode == "ToolButton":
+                pad_x = 0
+            else:
+                pad_x = 5
+            ttk.Checkbutton(frame,
+                            text=option,
+                            style=self.style + self.button_style,
+                            variable=self.value_vars[option],
+                            command=self._callback(self.bind_func)).pack(side="left", padx=pad_x)
+
+    def get_arg_info(self) -> ArgInfo:
+        field = self.name if self.name else self.__class__.__name__
+        arg_info = ArgInfo()
+        for v in self.value_vars:
+            arg_info += ArgInfo(name=field + "-" + v, set_func=self.value_vars[v].set, get_func=self.value_vars[v].get)
+
+        return arg_info
+
+
+class CheckButton(BaseCheckButton):
+    def __init__(self,
+                 options: str or Tuple[str] or List[Tuple[str, bool]],
+                 bind_func=None,
+                 name=None,
+                 title="请选择",
+                 style="primary",
+                 tab_index=0,
+                 async_run=False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        super().__init__(options=options,
+                         bind_func=bind_func,
+                         name=name,
+                         title=title,
+                         style=style,
+                         button_style=".TCheckbutton",
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode)
+
+
+class CheckToolButton(BaseCheckButton):
+    def __init__(self,
+                 options: str or Tuple[str] or List[Tuple[str, bool]],
+                 bind_func=None,
+                 name=None,
+                 title="请选择",
+                 style="info",
+                 tab_index=0,
+                 async_run=False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        super().__init__(options=options,
+                         bind_func=bind_func,
+                         name=name,
+                         title=title,
+                         style=style,
+                         button_style=".Toolbutton",
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode,
+                         mode="ToolButton")
+
+
+class CheckObviousToolButton(BaseCheckButton):
+    def __init__(self,
+                 options: str or Tuple[str] or List[Tuple[str, bool]],
+                 bind_func=None,
+                 name=None,
+                 title="请选择",
+                 style="primary",
+                 tab_index=0,
+                 async_run=False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        super().__init__(options=options,
+                         bind_func=bind_func,
+                         name=name,
+                         title=title,
+                         style=style,
+                         button_style=".Outline.TCheckbutton",
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode)
+
+
+class ToggleButton(BaseCheckButton):
+    def __init__(self,
+                 options: str or Tuple[str],
+                 bind_func=None,
+                 name=None,
+                 title="请选择",
+                 style="primary",
+                 tab_index=0,
+                 async_run=False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        assert not isinstance(options, list), "开关按钮仅有开和关两个选项，请传入单个选项"
+        super().__init__(options=options,
+                         bind_func=bind_func,
+                         name=name,
+                         title=title,
+                         style=style,
+                         button_style=".Roundtoggle.Toolbutton",
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode)

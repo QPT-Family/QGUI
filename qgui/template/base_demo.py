@@ -5,6 +5,7 @@ from qgui.notebook_tools import ChooseFileTextButton, RunButton
 
 def click(args):
     print("你点到我啦~")
+    # 获取文件选择工具的当前值
     print("输入框文字为：", args["文件选择"].get())
 
 

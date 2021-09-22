@@ -10,7 +10,7 @@ def click(args: dict):
 
 
 # 创建主界面
-main_gui = CreateQGUI(title="一个新应用")
+main_gui = CreateQGUI(title="一个新应用", tab_names=["主控制台", "第2页"])
 
 # 在界面最上方添加一个按钮，链接到GitHub主页
 main_gui.add_banner_tool(GitHub("https://github.com/QPT-Family/QGUI"))
@@ -23,6 +23,11 @@ main_gui.add_notebook_tool(ChooseFileTextButton(name="文件选择"))
 main_gui.add_notebook_tool(InputBox())
 main_gui.add_notebook_tool(Combobox(options=["11111", "21221"]))
 main_gui.add_notebook_tool(Slider(default=4))
+# 第二页
+main_gui.add_notebook_tool(CheckButton(options=[("选择1", 0), ("选择2", 1), ("选择3", 0)], tab_index=1))
+main_gui.add_notebook_tool(CheckToolButton(options=[("选择1", 0), ("选择2", 1), ("选择3", 0)], tab_index=1))
+main_gui.add_notebook_tool(CheckObviousToolButton(options=[("选择1", 0), ("选择2", 1), ("选择3", 0)], tab_index=1))
+main_gui.add_notebook_tool(ToggleButton(options=("开", 1), tab_index=1))
 # 要不要再添加一个运行按钮？，绑定刚刚创建的函数吧~
 main_gui.add_notebook_tool(RunButton(click))
 # 简单加个简介
