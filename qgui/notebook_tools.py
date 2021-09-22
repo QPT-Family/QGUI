@@ -148,7 +148,7 @@ class BaseChooseFileTextButton(BaseNotebookTool):
 
     def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
-        arg_info = ArgInfo(name=field, get_func=self.entry_var.get)
+        arg_info = ArgInfo(name=field, set_func=self.entry_var.set, get_func=self.entry_var.get)
 
         return arg_info
 
@@ -269,7 +269,7 @@ class InputBox(BaseNotebookTool):
 
     def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
-        arg_info = ArgInfo(name=field, get_func=self.input_vars.get)
+        arg_info = ArgInfo(name=field, set_func=self.input_vars.set, get_func=self.input_vars.get)
 
         return arg_info
 
@@ -309,7 +309,7 @@ class Combobox(BaseNotebookTool):
 
     def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
-        arg_info = ArgInfo(name=field, get_func=self.comb.get)
+        arg_info = ArgInfo(name=field, set_func=self.comb.set, get_func=self.comb.get)
 
         return arg_info
 
@@ -369,6 +369,6 @@ class Slider(BaseNotebookTool):
 
     def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
-        arg_info = ArgInfo(name=field, get_func=self.scale.get)
+        arg_info = ArgInfo(name=field, set_func=self.scale.set, get_func=self.scale.get)
 
         return arg_info
