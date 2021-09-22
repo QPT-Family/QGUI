@@ -532,10 +532,11 @@ class CheckObviousToolButton(BaseCheckButton):
                          name=name,
                          title=title,
                          style=style,
-                         button_style=".Outline.TCheckbutton",
+                         button_style=".Outline.Toolbutton",
                          tab_index=tab_index,
                          async_run=async_run,
-                         concurrency_mode=concurrency_mode)
+                         concurrency_mode=concurrency_mode,
+                         mode="ToolButton")
 
 
 class ToggleButton(BaseCheckButton):
@@ -558,3 +559,132 @@ class ToggleButton(BaseCheckButton):
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode)
+
+
+class BaseRadioButton(BaseNotebookTool):
+    def __init__(self,
+                 options: str or List[str],
+                 default: str = None,
+                 bind_func=None,
+                 name=None,
+                 title="请选择",
+                 style="primary",
+                 button_style=".TRadiobutton",
+                 tab_index=0,
+                 async_run=False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 mode=None):
+        super().__init__(bind_func=bind_func,
+                         name=name,
+                         style=style,
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode)
+        self.title = title
+        self.mode = mode
+        self.options = [options] if isinstance(options, str) else options
+        self.default = default if default else options[0]
+        self.button_style = button_style
+
+    def build(self, *args, **kwargs):
+        super().build(*args, **kwargs)
+        frame = ttk.Frame(self.master, style="TFrame")
+
+        frame.pack(side="top", fill="x", padx=5, pady=5)
+        label = ttk.Label(frame,
+                          text=self.title,
+                          style="TLabel",
+                          width=LABEL_WIDTH)
+        label.pack(side="left")
+
+        self.value_var = tkinter.StringVar(frame, value=self.options[0])
+        for option in self.options:
+            if self.mode == "ToolButton":
+                pad_x = 0
+            else:
+                pad_x = 5
+            ttk.Radiobutton(frame,
+                            text=option,
+                            style=self.style + self.button_style,
+                            variable=self.value_var,
+                            value=option,
+                            command=self._callback(self.bind_func)).pack(side="left", padx=pad_x)
+
+    def get_arg_info(self) -> ArgInfo:
+        field = self.name if self.name else self.__class__.__name__
+        arg_info = ArgInfo(name=field, set_func=self.value_var.set, get_func=self.value_var.get)
+
+        return arg_info
+
+
+class RadioButton(BaseRadioButton):
+    def __init__(self,
+                 options: str or List[str],
+                 default: str = None,
+                 bind_func=None,
+                 name=None,
+                 title="请选择",
+                 style="primary",
+                 tab_index=0,
+                 async_run=False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        super().__init__(options=options,
+                         default=default,
+                         bind_func=bind_func,
+                         name=name,
+                         title=title,
+                         style=style,
+                         button_style=".TRadiobutton",
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode,
+                         mode=None)
+
+
+class RadioToolButton(BaseRadioButton):
+    def __init__(self,
+                 options: str or List[str],
+                 default: str = None,
+                 bind_func=None,
+                 name=None,
+                 title="请选择",
+                 style="info",
+                 tab_index=0,
+                 async_run=False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        super().__init__(options=options,
+                         default=default,
+                         bind_func=bind_func,
+                         name=name,
+                         title=title,
+                         style=style,
+                         button_style=".Toolbutton",
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode,
+                         mode="ToolButton")
+
+
+class RadioObviousToolButton(BaseRadioButton):
+    def __init__(self,
+                 options: str or List[str],
+                 default: str = None,
+                 bind_func=None,
+                 name=None,
+                 title="请选择",
+                 style="primary",
+                 tab_index=0,
+                 async_run=False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        super().__init__(options=options,
+                         default=default,
+                         bind_func=bind_func,
+                         name=name,
+                         title=title,
+                         style=style,
+                         button_style=".Outline.Toolbutton",
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode,
+                         mode="ToolButton")
+
