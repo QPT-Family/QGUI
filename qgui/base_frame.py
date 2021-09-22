@@ -120,6 +120,9 @@ class BaseNoteBook(_Backbone):
             stdout = sys.stdout
         self.stdout = stdout
 
+        sys.stdout = StdOutWrapper(self.stdout, callback=self._write_log_callback)
+        sys.stderr = StdOutWrapper(self.stdout, callback=self._write_log_callback)
+
     def add_tool(self, tool: BaseNotebookTool):
         if tool.tab_index >= len(self.nb_frames):
             raise
@@ -128,7 +131,6 @@ class BaseNoteBook(_Backbone):
 
         tool_info = tool.get_arg_info()
         self.global_info += tool_info
-
 
     def apply_root(self, master, global_info):
         super(BaseNoteBook, self).apply_root(master, global_info)
@@ -169,16 +171,14 @@ class BaseNoteBook(_Backbone):
 
         self.text_area.pack(fill="both", expand="yes")
 
-        def _write_log_callback(text):
-            if text and text != "\n":
-                text = time.strftime("%H:%M:%S", time.localtime()) + "\t" + text
-            self.text_area.configure(state="normal")
-            self.text_area.insert("end", text)
-            self.text_area.configure(state="disable")
-
-        sys.stdout = StdOutWrapper(self.stdout, callback=_write_log_callback)
-        # sys.stderr = StdOutWrapper(sys.stderr, callback=_write_log_callback)
         self.text_area.insert("end", "控制台链接成功\n")
+        self.text_area.configure(state="disable")
+
+    def _write_log_callback(self, text):
+        if len(text) > 0 and text != "\n":
+            text = time.strftime("%H:%M:%S", time.localtime()) + "\t" + text
+        self.text_area.configure(state="normal")
+        self.text_area.insert("end", text)
         self.text_area.configure(state="disable")
 
 
