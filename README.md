@@ -4,12 +4,19 @@
 ![GitHub forks](https://img.shields.io/github/forks/QPT-Family/QGUI)
 ![GitHub Repo stars](https://img.shields.io/github/stars/QPT-Family/QGUI)
 ![GitHub](https://img.shields.io/github/license/QPT-Family/QGUI)
-![](https://img.shields.io/badge/支持系统-Win/Linux/MAC-9cf)
-QGUI - 用模板来快捷制作出属于你的图形化界面
+![](https://img.shields.io/badge/支持系统-Win/Linux/MAC-9cf)  
+QGUI - 低于100k的超轻量桌面级图形化框架，撰写几行代码、模板来快捷制作出属于你的图形化界面
 
 ## EAP - Easy access program
 
 > 当前版本为概念版本，仅确定QGUI架构使用，其中大部分功能不完善，如有需求可在issue中提出。
+
+**版本规划**  
+- [ ] 9月完成 V1.0预览版 - 提供常规GUI组件以及Callback
+- [ ] 10月完成 V1.0正式版 - 完善预览版，提供窗口拓展组件
+- [ ] 11月完成 V1.1 - 优化GUI排版，增加皮肤
+- [ ] 12月完成 V1.2 - 适配更多深度学习输入格式
+- [ ] 2022 - 支持远程模式
 
 ## 快速上手
 
@@ -18,7 +25,7 @@ QGUI - 用模板来快捷制作出属于你的图形化界面
 * 通用方式 ```python -m pip install qgui```
 * 国内推荐 ```python -m pip install qgui -i https://mirrors.bfsu.edu.cn/pypi/web/simple```
 
-### 代码示例
+### 代码示例/模板
 - [x] [以PaddleHub为例的完整示例](./qgui/template/paddlehub_demo.py)  
 
 简单示例
@@ -31,7 +38,7 @@ from qgui.notebook_tools import ChooseFileTextButton, RunButton
 
 def click(args):
     print("你点到我啦~")
-    print("输入框文字为：", args["文件选择"]())
+    print("输入框文字为：", args["文件选择"].get())
 
 
 # 创建主界面

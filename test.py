@@ -6,7 +6,7 @@ from qgui.notebook_tools import *
 def click(args: dict):
     print("你点到我啦~")
     for arg, v_fun in args.items():
-        print(arg, v_fun())
+        print(arg, v_fun.get())
 
 
 # 创建主界面

@@ -6,6 +6,7 @@ import os
 import webbrowser
 
 from qgui.manager import ICON_PATH
+from qgui.base_tools import ArgInfo
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 GITHUB_ICON = os.path.join(ICON_PATH, "github.png")

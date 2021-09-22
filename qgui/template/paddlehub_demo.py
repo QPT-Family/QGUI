@@ -16,8 +16,8 @@ human_seg = hub.Module(name="deeplabv3p_xception65_humanseg")
 
 
 def infer(args):
-    img_path = args["文件输入框"]()
-    out_path = args["保存位置"]()
+    img_path = args["文件输入框"].get()
+    out_path = args["保存位置"].get()
 
     # 简单做个判断，保证输入是正确的
     if not os.path.exists(img_path):

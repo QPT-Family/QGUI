@@ -11,8 +11,8 @@ import tkinter
 from tkinter import ttk
 from tkinter import filedialog
 
-from qgui.manager import ICON_PATH, FONT
-from qgui.base_tools import select_var_dtype
+from qgui.manager import ICON_PATH
+from qgui.base_tools import select_var_dtype, check_callable, ArgInfo
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 
@@ -34,16 +34,7 @@ class BaseNotebookTool:
                  tab_index=0,
                  async_run=False,
                  allow_concurrency=False):
-        if bind_func and not hasattr(bind_func, "__call__"):
-            raise f"{__class__.__name__}的bind_func需具备__call__方法，建议在此传入函数对象或自行构建具备__call__方法的对象。\n" \
-                  f"Example:\n" \
-                  f"    def xxx():\n" \
-                  f"        Do sth\n" \
-                  f"    MakeThisTool(bind_func=xxx)\n" \
-                  f"Error example:\n" \
-                  f"    def xxx():\n" \
-                  f"        Do sth\n" \
-                  f"    MakeThisTool(bind_func=xxx())"
+        check_callable(bind_func)
         self.bind_func = bind_func
         self.name = name
         self.style = style
@@ -63,7 +54,7 @@ class BaseNotebookTool:
             def render():
                 if start_func:
                     start_func()
-                func(self.global_info)
+                func(self.global_info.get_info())
                 if end_func:
                     end_func()
         else:
@@ -89,7 +80,7 @@ class BaseNotebookTool:
                     # 清除Flag，此时按钮可以再次点击
                     self.async_run_event.clear()
 
-                t = threading.Thread(target=new_func, args=(self.global_info,))
+                t = threading.Thread(target=new_func, args=(self.global_info.get_info(),))
                 t.setDaemon(True)
                 t.start()
         return render
@@ -98,8 +89,8 @@ class BaseNotebookTool:
         self.global_info = kwargs["global_info"]
         self.master = kwargs["master"]
 
-    def get_info(self) -> dict:
-        return dict()
+    def get_arg_info(self) -> ArgInfo:
+        return ArgInfo()
 
 
 class BaseChooseFileTextButton(BaseNotebookTool):
@@ -155,13 +146,11 @@ class BaseChooseFileTextButton(BaseNotebookTool):
         button.pack(side="right")
         return frame
 
-    def get_info(self) -> dict:
+    def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
+        arg_info = ArgInfo(name=field, get_func=self.entry_var.get)
 
-        def reader():
-            return self.entry_var.get()
-
-        return {field: reader}
+        return arg_info
 
 
 class ChooseFileTextButton(BaseChooseFileTextButton):
@@ -278,13 +267,11 @@ class InputBox(BaseNotebookTool):
         entry.pack(side="left", fill="x", padx=5, pady=2)
         return frame
 
-    def get_info(self) -> dict:
+    def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
+        arg_info = ArgInfo(name=field, get_func=self.input_vars.get)
 
-        def render():
-            return self.input_vars.get()
-
-        return {field: render}
+        return arg_info
 
 
 class Combobox(BaseNotebookTool):
@@ -320,13 +307,11 @@ class Combobox(BaseNotebookTool):
 
         return frame
 
-    def get_info(self) -> dict:
+    def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
+        arg_info = ArgInfo(name=field, get_func=self.comb.get)
 
-        def render():
-            return self.comb.get()
-
-        return {field: render}
+        return arg_info
 
 
 class Slider(BaseNotebookTool):
@@ -382,10 +367,8 @@ class Slider(BaseNotebookTool):
         self.value.pack(side="right")
         return frame
 
-    def get_info(self) -> dict:
+    def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
+        arg_info = ArgInfo(name=field, get_func=self.scale.get)
 
-        def render():
-            return self.dtype(self.scale.get())
-
-        return {field: render}
+        return arg_info

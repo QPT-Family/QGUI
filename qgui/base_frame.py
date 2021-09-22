@@ -17,6 +17,7 @@ from qgui.bar_tools import BaseBarTool
 from qgui.third_party.collapsing_frame import CollapsingFrame
 from qgui.notebook_tools import BaseNotebookTool
 from qgui.os_tools import StdOutWrapper
+from qgui.base_tools import ArgInfo
 
 TITLE_BG_COLOR = BLACK
 
@@ -37,7 +38,7 @@ class _Backbone:
         self.style = f_style
 
         # 全局变量
-        self.global_info = dict()
+        self.global_info = ArgInfo()
 
     def apply_root(self, master, global_info):
         self.frame = ttk.Frame(master, style=self.style + ".TFrame")
@@ -123,15 +124,11 @@ class BaseNoteBook(_Backbone):
         if tool.tab_index >= len(self.nb_frames):
             raise
         frame = self.nb_frames[tool.tab_index]
-
-        tool_info = tool.get_info()
-        if tool_info:
-            for info in tool_info:
-                if info in self.global_info:
-                    self.global_info[info + "-QGUI-" + len(self.global_info)] = tool_info[info]
-                else:
-                    self.global_info[info] = tool_info[info]
         tool.build(master=frame, global_info=self.global_info)
+
+        tool_info = tool.get_arg_info()
+        self.global_info += tool_info
+
 
     def apply_root(self, master, global_info):
         super(BaseNoteBook, self).apply_root(master, global_info)
