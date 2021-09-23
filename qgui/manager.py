@@ -14,6 +14,9 @@ QGUI_BASE_PATH = os.path.dirname(qgui.__file__)
 RESOURCES_PATH = os.path.join(QGUI_BASE_PATH, "resources")
 ICON_PATH = os.path.join(RESOURCES_PATH, "icon")
 
+HORIZONTAL = "Horizontal水平方向"
+VERTICAL = "Vertical垂直方向"
+
 
 # Tools部分
 class ConcurrencyModeFlag:

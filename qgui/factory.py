@@ -48,9 +48,9 @@ class CreateQGUI:
         self.notebook = notebook if notebook else BaseNoteBook(tab_names=tab_names, stdout=stout)
 
         # ToDo 做个 global_info管理器，目前信息只从Notebook中流出
-        self.banner.apply_root(self.root, self.notebook.global_info)
-        self.navigation.apply_root(self.root, self.notebook.global_info)
-        self.notebook.apply_root(self.root, self.notebook.global_info)
+        self.banner.build(self.root, self.notebook.global_info)
+        self.navigation.build(self.root, self.notebook.global_info)
+        self.notebook.build(self.root, self.notebook.global_info)
 
     def add_banner_tool(self, tool: BaseBarTool):
         self.banner.add_tool(tool)

@@ -40,7 +40,7 @@ class _Backbone:
         # 全局变量
         self.global_info = ArgInfo()
 
-    def apply_root(self, master, global_info):
+    def build(self, master, global_info):
         self.frame = ttk.Frame(master, style=self.style + ".TFrame")
         self.global_info = global_info
 
@@ -99,8 +99,8 @@ class BaseNavigation(_Backbone):
     #                      compound='left',
     #                      command=tool.bind_func)
     #     btn.pack(side='left', ipadx=5, ipady=5, padx=0, pady=1)
-    def apply_root(self, master, global_info):
-        super(BaseNavigation, self).apply_root(master, global_info)
+    def build(self, master, global_info):
+        super(BaseNavigation, self).build(master, global_info)
         self.frame.place(x=0, y=50, width=180, height=470)
 
 
@@ -123,17 +123,22 @@ class BaseNoteBook(_Backbone):
         sys.stdout = StdOutWrapper(self.stdout, callback=self._write_log_callback)
         sys.stderr = StdOutWrapper(self.stdout, callback=self._write_log_callback)
 
-    def add_tool(self, tool: BaseNotebookTool):
-        if tool.tab_index >= len(self.nb_frames):
-            raise
-        frame = self.nb_frames[tool.tab_index]
-        tool.build(master=frame, global_info=self.global_info)
+    def add_tool(self, tool: BaseNotebookTool, to_notebook=True):
+        if to_notebook:
+            if tool.tab_index >= len(self.nb_frames):
+                raise ValueError(f"设置的index大小越界，当前页面数量为{len(self.nb_frames)}，分别为：{self.nb_frames}，而"
+                                 f"您设置的index为{tool.tab_index}，超过了当前页面数量。")
+            frame = self.nb_frames[tool.tab_index]
+            tool.build(master=frame, global_info=self.global_info)
+        else:
+            frame = self.bottom_frame
+            tool.build(master=frame, global_info=self.global_info)
 
         tool_info = tool.get_arg_info()
         self.global_info += tool_info
 
-    def apply_root(self, master, global_info):
-        super(BaseNoteBook, self).apply_root(master, global_info)
+    def build(self, master, global_info):
+        super(BaseNoteBook, self).build(master, global_info)
         self.frame.place(x=182, y=55, width=750, height=460)
         self.nb = ttk.Notebook(self.frame)
         self.nb.pack(side="top", fill="both")
@@ -174,12 +179,20 @@ class BaseNoteBook(_Backbone):
         self.text_area.insert("end", "控制台链接成功\n")
         self.text_area.configure(state="disable")
 
+        # ToDo 研究一下为什么会被覆盖ScrolledText
+        # 增加底部网格
+        self.bottom_frame = ttk.Frame(self.frame,
+                                      style=self.style + ".TFrame")
+        # self.bottom_frame.pack(side="top", fill='both', expand="yes")
+
+
     def _write_log_callback(self, text):
         if len(text) > 0 and text != "\n":
             text = time.strftime("%H:%M:%S", time.localtime()) + "\t" + text
         self.text_area.configure(state="normal")
         self.text_area.insert("end", text)
         self.text_area.configure(state="disable")
+        self.text_area.see("end")
 
 
 class BaseBanner(_Backbone):
@@ -214,8 +227,8 @@ class BaseBanner(_Backbone):
 
         btn.pack(side="left", ipadx=5, ipady=5, padx=0, pady=1)
 
-    def apply_root(self, master, global_info):
-        super(BaseBanner, self).apply_root(master, global_info)
+    def build(self, master, global_info):
+        super(BaseBanner, self).build(master, global_info)
         self.frame.place(x=0, y=0, width=940, height=50)
         # 占位标题
         black = tkinter.Frame(self.frame,

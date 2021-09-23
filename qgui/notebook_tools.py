@@ -12,7 +12,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import filedialog
 
-from qgui.manager import ICON_PATH
+from qgui.manager import *
 from qgui.base_tools import ConcurrencyModeFlag, check_callable, ArgInfo, select_var_dtype
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
@@ -40,7 +40,7 @@ class BaseNotebookTool:
         check_callable(bind_func)
         self.bind_func = bind_func
         self.name = name
-        self.style = style
+        self.style = style + "." if style else ""
         self.tab_index = tab_index
         self.async_run = async_run
         # 控制并发模式
@@ -154,14 +154,14 @@ class BaseChooseFileTextButton(BaseNotebookTool):
                           width=LABEL_WIDTH)
         label.pack(side="left")
         entry = ttk.Entry(frame,
-                          style=self.style + ".info.TEntry",
+                          style=self.style + "info.TEntry",
                           textvariable=self.entry_var)
         entry.pack(side="left", fill="x", expand="yes", padx=5, pady=2)
 
         command = self._callback(self.bind_func) if self.bind_func else self._callback(lambda x: print(f"文件{x}被选取"))
         button = ttk.Button(frame,
                             text=self.button_info,
-                            style=self.style + ".TButton",
+                            style=self.style + "TButton",
                             command=command,
                             width=12)
         button.pack(side="right")
@@ -250,15 +250,21 @@ class RunButton(BaseNotebookTool):
         self.icon = tkinter.PhotoImage(name=self.text,
                                        file=RUN_ICON)
 
+        self.text_var = tkinter.StringVar(frame, value=self.text)
+
         def click_btn():
             self.btn.configure(style="secondary.TButton")
+            self.btn.configure(state="disable")
+            self.text_var.set("正在执行")
 
         def done_btn():
             self.btn.configure(style="success.TButton")
+            self.btn.configure(state="normal")
+            self.text_var.set(self.text)
 
         self.btn = ttk.Button(frame,
-                              text=self.text,
-                              image=self.text,
+                              textvariable=self.text_var,
+                              image=self.icon,
                               compound='left',
                               command=self._callback(self.bind_func, click_btn, done_btn),
                               style="success.TButton",
@@ -292,7 +298,7 @@ class InputBox(BaseNotebookTool):
         label.pack(side="left")
 
         entry = ttk.Entry(frame,
-                          style=self.style + ".info.TEntry",
+                          style=self.style + "info.TEntry",
                           textvariable=self.input_vars,
                           width=INPUT_BOX_LEN)
         entry.pack(side="left", fill="x", padx=5, pady=2)
@@ -332,7 +338,7 @@ class Combobox(BaseNotebookTool):
                           width=LABEL_WIDTH)
         label.pack(side="left")
         self.comb = ttk.Combobox(frame,
-                                 style=self.style + ".TCombobox",
+                                 style=self.style + "TCombobox",
                                  values=self.options)
         self.comb.current(0)
         self.comb.bind('<<ComboboxSelected>>', self._callback(self.bind_func))
@@ -414,7 +420,7 @@ class BaseCheckButton(BaseNotebookTool):
                  name=None,
                  title="请选择",
                  style="primary",
-                 button_style=".TCheckbutton",
+                 button_style="TCheckbutton",
                  tab_index=0,
                  async_run=False,
                  concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
@@ -489,7 +495,7 @@ class CheckButton(BaseCheckButton):
                          name=name,
                          title=title,
                          style=style,
-                         button_style=".TCheckbutton",
+                         button_style="TCheckbutton",
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode)
@@ -510,7 +516,7 @@ class CheckToolButton(BaseCheckButton):
                          name=name,
                          title=title,
                          style=style,
-                         button_style=".Toolbutton",
+                         button_style="Toolbutton",
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
@@ -532,7 +538,7 @@ class CheckObviousToolButton(BaseCheckButton):
                          name=name,
                          title=title,
                          style=style,
-                         button_style=".Outline.Toolbutton",
+                         button_style="Outline.Toolbutton",
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
@@ -555,7 +561,7 @@ class ToggleButton(BaseCheckButton):
                          name=name,
                          title=title,
                          style=style,
-                         button_style=".Roundtoggle.Toolbutton",
+                         button_style="Roundtoggle.Toolbutton",
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode)
@@ -569,7 +575,7 @@ class BaseRadioButton(BaseNotebookTool):
                  name=None,
                  title="请选择",
                  style="primary",
-                 button_style=".TRadiobutton",
+                 button_style="TRadiobutton",
                  tab_index=0,
                  async_run=False,
                  concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
@@ -634,7 +640,7 @@ class RadioButton(BaseRadioButton):
                          name=name,
                          title=title,
                          style=style,
-                         button_style=".TRadiobutton",
+                         button_style="TRadiobutton",
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
@@ -658,7 +664,7 @@ class RadioToolButton(BaseRadioButton):
                          name=name,
                          title=title,
                          style=style,
-                         button_style=".Toolbutton",
+                         button_style="Toolbutton",
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
@@ -682,9 +688,121 @@ class RadioObviousToolButton(BaseRadioButton):
                          name=name,
                          title=title,
                          style=style,
-                         button_style=".Outline.Toolbutton",
+                         button_style="Outline.Toolbutton",
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
                          mode="ToolButton")
 
+
+class Progressbar(BaseNotebookTool):
+    def __init__(self,
+                 title: str = "进度条",
+                 default: int = 0,
+                 max_size: int = 100,
+                 name: str = None,
+                 style: str = "primary",
+                 tab_index: int = 0,
+                 async_run: bool = False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        super().__init__(name=name,
+                         style=style,
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode)
+        self.title = title
+        self.default_value = default
+        self.max_size = max_size
+
+    def progressbar_var_trace(self, *args):
+        v = self.progressbar_var.get()
+        self.value_var.set(f"进度 {v:.2f}%")
+
+    def build(self, *args, **kwargs):
+        super().build(*args, **kwargs)
+        frame = ttk.Frame(self.master, style="TFrame")
+        self.progressbar_var = tkinter.IntVar(frame, value=self.default_value)
+        self.value_var = tkinter.StringVar(frame, value=f"进度 {self.default_value:.2f}%")
+        self.progressbar_var.trace("w", self.progressbar_var_trace)
+        frame.pack(side="top", fill="x", padx=5, pady=5)
+        label = ttk.Label(frame,
+                          text=self.title,
+                          style="TLabel",
+                          width=LABEL_WIDTH)
+        label.pack(side="left")
+
+        progressbar = ttk.Progressbar(frame,
+                                      variable=self.progressbar_var,
+                                      style=self.style + "Striped.Horizontal.TProgressbar")
+        progressbar.pack(side="left", fill="x", expand="yes", padx=5, pady=2)
+
+        self.value = ttk.Label(frame,
+                               textvariable=self.value_var,
+                               style="TLabel",
+                               width=LABEL_WIDTH)
+        self.value.pack(side="right")
+        return frame
+
+    def get_arg_info(self) -> ArgInfo:
+        field = self.name if self.name else self.__class__.__name__
+        arg_info = ArgInfo(name=field, set_func=self.progressbar_var.set, get_func=self.progressbar_var.get)
+
+        return arg_info
+
+
+class BaseCombine(BaseNotebookTool):
+    def __init__(self,
+                 tools: BaseNotebookTool or List[BaseNotebookTool],
+                 side=HORIZONTAL,
+                 title=None,
+                 style: str = None,
+                 tab_index: int = None):
+        super().__init__(tab_index=tab_index, style=style)
+        self.side = "top" if side else "left"
+        self.title = title
+
+        self.tools = tools if isinstance(tools, list) else [tools]
+
+        self.tab_index = tab_index if tab_index else self.tools[0].tab_index
+
+        for tool_id in range(len(self.tools)):
+            self.tools[tool_id].tab_index = self.tab_index
+
+    def build(self, *args, **kwargs):
+        super().build(self, *args, **kwargs)
+
+        style_mode = "TLabelframe" if self.title else "TFrame"
+        if self.title:
+            frame = ttk.LabelFrame(self.master, style=self.style + style_mode)
+        else:
+            frame = ttk.Frame(self.master, style=self.style + style_mode)
+        frame.pack(anchor=self.n)
+        for tool in self.tools:
+            kwargs["master"] = frame
+            tool.build(*args, **kwargs)
+
+
+class HorizontalCombine(BaseCombine):
+    def __init__(self,
+                 tools: BaseNotebookTool or List[BaseNotebookTool],
+                 title=None,
+                 style: str = None,
+                 tab_index: int = 0):
+        super().__init__(tools=tools,
+                         side=HORIZONTAL,
+                         title=title,
+                         style=style,
+                         tab_index=tab_index)
+
+
+class VerticalCombine(BaseCombine):
+    def __init__(self,
+                 tools: BaseNotebookTool or List[BaseNotebookTool],
+                 title=None,
+                 style: str = None,
+                 tab_index: int = 0):
+        super().__init__(tools=tools,
+                         side=VERTICAL,
+                         title=title,
+                         style=style,
+                         tab_index=tab_index)
