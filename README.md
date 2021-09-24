@@ -60,6 +60,7 @@ main_gui.set_navigation_about(author="GT",
 # 跑起来~
 main_gui.run()
 ```
+<img src="./ext/Demo.png" width="300" title="Demo展示效果">
 
 ### 组件文档
 
