@@ -22,7 +22,7 @@ def infer(args):
     # 简单做个判断，保证输入是正确的
     if not os.path.exists(img_path):
         MessageBox.info("请选择要分割的图片")
-        # 不选择就不做预测了，气！
+        # 不选择就不做预测了
         return 1
     if not os.path.exists(out_path):
         MessageBox.info("请选择图片保存目录")

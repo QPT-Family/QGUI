@@ -5,43 +5,52 @@
 import os
 import webbrowser
 
-from qgui.manager import ICON_PATH
-from qgui.base_tools import ArgInfo
+import tkinter
+from tkinter import ttk
+from qgui.manager import ICON_PATH, ConcurrencyModeFlag
+from qgui.base_tools import ArgInfo, BaseTool
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 GITHUB_ICON = os.path.join(ICON_PATH, "github.png")
 
 
-class BaseBarTool:
+class BaseBarTool(BaseTool):
+    """
+    基础Banner工具集
+    需注意的是，如需增加异步等操作，请为函数添加_callback
+    """
+
     def __init__(self,
                  bind_func,
                  name="未命名组件",
                  icon=None,
-                 style="",
-                 ):
-        if not hasattr(bind_func, "__call__"):
-            raise f"{__class__.__name__}的bind_func需具备__call__方法，建议在此传入函数或自行构建具备__call__方法的对象。\n" \
-                  f"Example:\n" \
-                  f"    def xxx():\n" \
-                  f"        Do sth\n" \
-                  f"    MakeThisTool(bind_func=xxx)\n" \
-                  f"Error example:\n" \
-                  f"    def xxx():\n" \
-                  f"        Do sth\n" \
-                  f"    MakeThisTool(bind_func=xxx())"
+                 style=None,
+                 async_run: bool = True,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        super().__init__(bind_func=bind_func,
+                         name=name,
+                         style=style,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode)
 
         if icon and not os.path.exists(icon):
             raise f"请确认{os.path.abspath(icon)}是否存在"
         if not icon:
             icon = RUN_ICON
-        self.name = name
-        self.bind_func = bind_func
         self.icon = icon
 
-        if style:
-            self.style = style + ".TButton"
-        else:
-            self.style = "TButton"
+    def build(self, *args, **kwargs):
+        super().build(*args, **kwargs)
+        self.img = tkinter.PhotoImage(file=self.icon)
+
+        btn = ttk.Button(self.master,
+                         text=self.name,
+                         image=self.img,
+                         compound="left",
+                         command=self._callback(self.bind_func) if self.async_run else self.bind_func,
+                         style=self.style + "TButton")
+
+        btn.pack(side="left", ipadx=5, ipady=5, padx=0, pady=1)
 
 
 class RunTool(BaseBarTool):
@@ -49,13 +58,17 @@ class RunTool(BaseBarTool):
                  bind_func,
                  name="开始执行",
                  icon=None,
-                 style="success"):
+                 style="success",
+                 async_run: bool = True,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
         if not icon:
             icon = RUN_ICON
         super(RunTool, self).__init__(bind_func,
                                       name=name,
                                       icon=icon,
-                                      style=style)
+                                      style=style,
+                                      async_run=async_run,
+                                      concurrency_mode=concurrency_mode)
 
 
 class GitHub(BaseBarTool):

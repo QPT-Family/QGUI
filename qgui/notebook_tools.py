@@ -2,9 +2,7 @@
 # Datetime: 2021/9/16 
 # Copyright belongs to the author.
 # Please indicate the source for reprinting.
-import os
-import threading
-import traceback
+
 from typing import List, Dict, Tuple
 from collections import OrderedDict
 
@@ -13,16 +11,17 @@ from tkinter import ttk
 from tkinter import filedialog
 
 from qgui.manager import *
-from qgui.base_tools import ConcurrencyModeFlag, check_callable, ArgInfo, select_var_dtype
+from qgui.base_tools import ConcurrencyModeFlag, check_callable, ArgInfo, select_var_dtype, BaseTool
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 
 LEFT_PAD_LEN = 10
-LABEL_WIDTH = 16
+LABEL_WIDTH = 12
 INPUT_BOX_LEN = 70
+DEFAULT_PAD = 5
 
 
-class BaseNotebookTool:
+class BaseNotebookTool(BaseTool):
     """
     基础Notebook工具集，提供基础异步Callback
     1. 写Build，记得继承才会有self.master，继承时候传**kwargs
@@ -37,80 +36,12 @@ class BaseNotebookTool:
                  tab_index: int = 0,
                  async_run: bool = False,
                  concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
-        check_callable(bind_func)
-        self.bind_func = bind_func
-        self.name = name
-        self.style = style + "." if style else ""
+        super().__init__(bind_func=bind_func,
+                         name=name,
+                         style=style,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode)
         self.tab_index = tab_index
-        self.async_run = async_run
-        # 控制并发模式
-        self.concurrency_mode = concurrency_mode
-
-        # 占位符
-        self.global_info = None
-        self.master = None
-
-        # 重复点击的Flag
-        self.async_run_event = threading.Event()
-        self.thread_pool = list()
-
-    def _callback(self, func, start_func=None, end_func=None):
-        """
-        支持同步和异步的Callback
-        :param func: 函数对象
-        :param start_func: 开始前的函数对象
-        :param end_func: 结束后的函数对象
-        """
-        if func:
-            if not self.async_run:
-                def render():
-                    if start_func:
-                        start_func()
-                    func(self.global_info.get_info())
-                    if end_func:
-                        end_func()
-            else:
-                def render():
-                    # 若不允许并发则在启动时加Flag
-                    if self.async_run_event.is_set():
-                        if self.concurrency_mode == ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG:
-                            return lambda: print("当前设置为禁止并发，请勿重复点击，因为点了也没用")
-                    else:
-                        self.async_run_event.set()
-
-                    if start_func:
-                        start_func()
-
-                    def new_func(obj):
-                        try:
-                            func(obj)
-                        except Exception as e:
-                            print("-----以下为异常信息-----")
-                            print(traceback.print_exc())
-                            print("-----以上为异常信息-----")
-                        if end_func:
-                            end_func()
-                        # 清除Flag，此时按钮可以再次点击
-                        self.async_run_event.clear()
-
-                    t = threading.Thread(target=new_func, args=(self.global_info.get_info(),))
-                    t.setDaemon(True)
-                    t.start()
-
-                    self.thread_pool.append(t)
-            return render
-        else:
-            def none():
-                pass
-
-            return none
-
-    def build(self, *args, **kwargs):
-        self.global_info = kwargs["global_info"]
-        self.master = kwargs["master"]
-
-    def get_arg_info(self) -> ArgInfo:
-        return ArgInfo()
 
 
 class BaseChooseFileTextButton(BaseNotebookTool):
@@ -226,39 +157,43 @@ class ChooseDirTextButton(BaseChooseFileTextButton):
         return render
 
 
-class RunButton(BaseNotebookTool):
+class BaseButton(BaseNotebookTool):
     def __init__(self,
                  bind_func,
+                 name: str = None,
                  text: str = "开始执行",
+                 checked_text: str = None,
                  async_run: bool = True,
                  style: str = "primary",
                  tab_index: int = 0,
                  concurrency_mode: bool = False):
-        super(RunButton, self).__init__(bind_func,
-                                        style,
-                                        tab_index=tab_index,
-                                        async_run=async_run,
-                                        concurrency_mode=concurrency_mode)
+        super().__init__(bind_func,
+                         name=name,
+                         style=style,
+                         tab_index=tab_index,
+                         async_run=async_run,
+                         concurrency_mode=concurrency_mode)
         self.text = text
+        self.checked_text = checked_text
 
         self.icon = None
 
     def build(self, **kwargs) -> tkinter.Frame:
-        super(RunButton, self).build(**kwargs)
+        super().build(**kwargs)
         frame = ttk.Frame(self.master, style="TFrame")
         frame.pack(side="top", fill="x", padx=5, pady=5)
-        self.icon = tkinter.PhotoImage(name=self.text,
-                                       file=RUN_ICON)
+        self.icon = tkinter.PhotoImage(file=RUN_ICON)
 
         self.text_var = tkinter.StringVar(frame, value=self.text)
 
         def click_btn():
-            self.btn.configure(style="secondary.TButton")
+            self.btn.configure(style=self.style + "TButton")
             self.btn.configure(state="disable")
-            self.text_var.set("正在执行")
+            if self.checked_text:
+                self.text_var.set(self.checked_text)
 
         def done_btn():
-            self.btn.configure(style="success.TButton")
+            self.btn.configure(style=self.style + "TButton")
             self.btn.configure(state="normal")
             self.text_var.set(self.text)
 
@@ -267,11 +202,31 @@ class RunButton(BaseNotebookTool):
                               image=self.icon,
                               compound='left',
                               command=self._callback(self.bind_func, click_btn, done_btn),
-                              style="success.TButton",
+                              style=self.style + "TButton",
                               width=10)
 
         self.btn.pack(anchor="ne", padx=0, pady=0)
         return frame
+
+
+class RunButton(BaseButton):
+    def __init__(self,
+                 bind_func,
+                 name: str = None,
+                 text: str = "开始执行",
+                 checked_text: str = "正在执行",
+                 async_run: bool = True,
+                 style: str = "success",
+                 tab_index: int = 0,
+                 concurrency_mode: bool = False):
+        super().__init__(bind_func=bind_func,
+                         name=name,
+                         text=text,
+                         checked_text=checked_text,
+                         async_run=async_run,
+                         style=style,
+                         tab_index=tab_index,
+                         concurrency_mode=concurrency_mode)
 
 
 class InputBox(BaseNotebookTool):
@@ -394,11 +349,10 @@ class Slider(BaseNotebookTool):
                                from_=self.min_size,
                                to=self.max_size,
                                value=self.default,
-                               variable=self.slider_var,
-                               length=500)
+                               variable=self.slider_var)
         # ToDo ttk 的Bug
         # self.scale.configure(style="info.TSlider")
-        self.scale.pack(side="left", padx=5, fill="x")
+        self.scale.pack(side="left", padx=5, fill="x", expand="yes")
         self.value = ttk.Label(frame,
                                textvariable=self.value_var,
                                style="TLabel",
@@ -724,7 +678,7 @@ class Progressbar(BaseNotebookTool):
         self.progressbar_var = tkinter.IntVar(frame, value=self.default_value)
         self.value_var = tkinter.StringVar(frame, value=f"进度 {self.default_value:.2f}%")
         self.progressbar_var.trace("w", self.progressbar_var_trace)
-        frame.pack(side="top", fill="x", padx=5, pady=5)
+        frame.pack(side="top", fill="x", padx=5, pady=5, expand="yes")
         label = ttk.Label(frame,
                           text=self.title,
                           style="TLabel",
@@ -758,7 +712,7 @@ class BaseCombine(BaseNotebookTool):
                  style: str = None,
                  tab_index: int = None):
         super().__init__(tab_index=tab_index, style=style)
-        self.side = "top" if side else "left"
+        self.side = "top" if side == HORIZONTAL else "left"
         self.title = title
 
         self.tools = tools if isinstance(tools, list) else [tools]
@@ -768,21 +722,29 @@ class BaseCombine(BaseNotebookTool):
         for tool_id in range(len(self.tools)):
             self.tools[tool_id].tab_index = self.tab_index
 
+    def get_arg_info(self) -> ArgInfo:
+        local_info = ArgInfo()
+        for tool_id in range(len(self.tools)):
+            local_info += self.tools[tool_id].get_arg_info()
+        return local_info
+
+
+class BaseFrameCombine(BaseCombine):
     def build(self, *args, **kwargs):
         super().build(self, *args, **kwargs)
 
         style_mode = "TLabelframe" if self.title else "TFrame"
         if self.title:
-            frame = ttk.LabelFrame(self.master, style=self.style + style_mode)
+            frame = ttk.LabelFrame(self.master, text=self.title, style=self.style + style_mode)
         else:
-            frame = ttk.Frame(self.master, style=self.style + style_mode)
-        frame.pack(anchor=self.n)
+            frame = ttk.Frame(self.master, text=self.title, style=self.style + style_mode)
+        frame.pack(side="left", anchor="nw", fill="both", expand="yes", padx=8, pady=8)
         for tool in self.tools:
             kwargs["master"] = frame
             tool.build(*args, **kwargs)
 
 
-class HorizontalCombine(BaseCombine):
+class HorizontalFrameCombine(BaseFrameCombine):
     def __init__(self,
                  tools: BaseNotebookTool or List[BaseNotebookTool],
                  title=None,
@@ -795,7 +757,7 @@ class HorizontalCombine(BaseCombine):
                          tab_index=tab_index)
 
 
-class VerticalCombine(BaseCombine):
+class VerticalFrameCombine(BaseFrameCombine):
     def __init__(self,
                  tools: BaseNotebookTool or List[BaseNotebookTool],
                  title=None,
@@ -806,3 +768,31 @@ class VerticalCombine(BaseCombine):
                          title=title,
                          style=style,
                          tab_index=tab_index)
+
+
+class HorizontalToolsCombine(BaseCombine):
+    def __init__(self,
+                 tools: BaseNotebookTool or List[BaseNotebookTool],
+                 side=HORIZONTAL,
+                 title=None,
+                 style: str = None,
+                 tab_index: int = None):
+        super().__init__(tools=tools,
+                         side=side,
+                         title=title,
+                         style=style,
+                         tab_index=tab_index)
+
+    def build(self, *args, **kwargs):
+        super().build(self, *args, **kwargs)
+        style_mode = "TLabelframe" if self.title else "TFrame"
+        if self.title:
+            frame = ttk.LabelFrame(self.master, text=self.title, style=self.style + style_mode)
+        else:
+            frame = ttk.Frame(self.master, style=self.style + style_mode)
+        frame.pack(side="top", fill="x", expand="yes")
+        for tool in self.tools:
+            sub_frame = ttk.Frame(frame, style="TFrame")
+            sub_frame.pack(side="left", fill="x", expand="yes")
+            kwargs["master"] = sub_frame
+            tool.build(*args, **kwargs)

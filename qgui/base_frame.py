@@ -82,13 +82,14 @@ class BaseNavigation(_Backbone):
             github_label.bind("<Button-1>", github_callback)
 
     def add_info(self,
+                 title: str,
                  info: str):
         bus_cf = CollapsingFrame(self.frame)
         bus_cf.pack(fill='x', pady=0)
 
         bus_frm = ttk.Frame(bus_cf, padding=5)
         bus_frm.columnconfigure(1, weight=1)
-        bus_cf.add(bus_frm, title="项目简介", style='secondary.TButton', justify="left")
+        bus_cf.add(bus_frm, title=title, style='secondary.TButton', justify="left")
 
         ttk.Label(bus_frm, text=info, style="TLabel", wraplength=160).pack(anchor="nw")
 
@@ -185,7 +186,6 @@ class BaseNoteBook(_Backbone):
                                       style=self.style + ".TFrame")
         # self.bottom_frame.pack(side="top", fill='both', expand="yes")
 
-
     def _write_log_callback(self, text):
         if len(text) > 0 and text != "\n":
             text = time.strftime("%H:%M:%S", time.localtime()) + "\t" + text
@@ -203,29 +203,14 @@ class BaseBanner(_Backbone):
         self.img_info = dict()
         self.title = title
 
-    def _callback(self, func):
-        def render():
-            func(self.global_info)
-
-        return render
-
     def add_tool(self, tool: BaseBarTool):
         """
         添加小工具组件
         :param
         """
-
-        self.img_info[tool.name] = tkinter.PhotoImage(name=tool.name,
-                                                      file=tool.icon)
-
-        btn = ttk.Button(self.frame,
-                         text=tool.name,
-                         image=tool.name,
-                         compound='left',
-                         command=self._callback(tool.bind_func),
-                         style=tool.style)
-
-        btn.pack(side="left", ipadx=5, ipady=5, padx=0, pady=1)
+        tool.build(master=self.frame, global_info=self.global_info)
+        tool_info = tool.get_arg_info()
+        self.global_info += tool_info
 
     def build(self, master, global_info):
         super(BaseBanner, self).build(master, global_info)

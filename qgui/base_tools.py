@@ -2,6 +2,8 @@
 # Datetime:2021/9/21 
 # Copyright belongs to the author.
 # Please indicate the source for reprinting.
+import threading
+import traceback
 from typing import Dict
 
 import tkinter
@@ -59,6 +61,9 @@ class ArgInfo:
                     self.all_info[info_name] = other_info[info_name]
         return self
 
+    def __getitem__(self, item):
+        return self.all_info[item]
+
 
 def select_var_dtype(dtype):
     if issubclass(dtype, int):
@@ -69,6 +74,95 @@ def select_var_dtype(dtype):
         return tkinter.StringVar
     elif issubclass(dtype, bool):
         return tkinter.BooleanVar
+
+
+class BaseTool:
+    """
+    基础工具集，提供基础异步Callback
+    1. 写Build，记得继承才会有self.master，继承时候传**kwargs
+    2. 若需返回信息，请重写get_info方法->ArgInfo
+    3. 如绑定func，需要封装Callback
+    """
+
+    def __init__(self,
+                 bind_func=None,
+                 name: str = None,
+                 style: str = "primary",
+                 async_run: bool = False,
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+        check_callable(bind_func)
+        self.bind_func = bind_func
+        self.name = name
+        self.style = style + "." if style else ""
+        self.async_run = async_run
+        # 控制并发模式
+        self.concurrency_mode = concurrency_mode
+
+        # 占位符
+        self.global_info = None
+        self.master = None
+
+        # 重复点击的Flag
+        self.async_run_event = threading.Event()
+        self.thread_pool = list()
+
+    def _callback(self, func, start_func=None, end_func=None):
+        """
+        支持同步和异步的Callback
+        :param func: 函数对象
+        :param start_func: 开始前的函数对象
+        :param end_func: 结束后的函数对象
+        """
+        if func:
+            if not self.async_run:
+                def render():
+                    if start_func:
+                        start_func()
+                    func(self.global_info.get_info())
+                    if end_func:
+                        end_func()
+            else:
+                def render():
+                    # 若不允许并发则在启动时加Flag
+                    if self.async_run_event.is_set():
+                        if self.concurrency_mode == ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG:
+                            return lambda: print("当前设置为禁止并发，请勿重复点击，因为点了也没用")
+                    else:
+                        self.async_run_event.set()
+
+                    if start_func:
+                        start_func()
+
+                    def new_func(obj):
+                        try:
+                            func(obj)
+                        except Exception as e:
+                            print("-----以下为异常信息-----")
+                            print(traceback.print_exc())
+                            print("-----以上为异常信息-----")
+                        if end_func:
+                            end_func()
+                        # 清除Flag，此时按钮可以再次点击
+                        self.async_run_event.clear()
+
+                    t = threading.Thread(target=new_func, args=(self.global_info.get_info(),))
+                    t.setDaemon(True)
+                    t.start()
+
+                    self.thread_pool.append(t)
+            return render
+        else:
+            def none():
+                pass
+
+            return none
+
+    def build(self, *args, **kwargs):
+        self.global_info = kwargs["global_info"]
+        self.master = kwargs["master"]
+
+    def get_arg_info(self) -> ArgInfo:
+        return ArgInfo()
 
 
 if __name__ == '__main__':

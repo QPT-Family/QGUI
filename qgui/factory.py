@@ -47,16 +47,24 @@ class CreateQGUI:
         self.navigation = navigation if navigation else BaseNavigation()
         self.notebook = notebook if notebook else BaseNoteBook(tab_names=tab_names, stdout=stout)
 
+        self.banner.build(self.root, self.get_global_info)
+        self.navigation.build(self.root, self.get_global_info)
+        self.notebook.build(self.root, self.get_global_info)
+
+    @property
+    def get_global_info(self):
         # ToDo 做个 global_info管理器，目前信息只从Notebook中流出
-        self.banner.build(self.root, self.notebook.global_info)
-        self.navigation.build(self.root, self.notebook.global_info)
-        self.notebook.build(self.root, self.notebook.global_info)
+        return self.notebook.global_info
 
     def add_banner_tool(self, tool: BaseBarTool):
         self.banner.add_tool(tool)
 
+    abt = add_banner_tool
+
     def add_notebook_tool(self, tool: BaseNotebookTool):
         self.notebook.add_tool(tool)
+
+    ant = add_notebook_tool
 
     def set_navigation_about(self,
                              author: str = "未知作者",
@@ -68,9 +76,14 @@ class CreateQGUI:
                                   github_url=github_url,
                                   other_info=other_info)
 
+    sna = set_navigation_about
+
     def set_navigation_info(self,
+                            title: str,
                             info: str):
-        self.navigation.add_info(info=info)
+        self.navigation.add_info(title=title, info=info)
+
+    sni = set_navigation_info
 
     def run(self):
         self.root.mainloop()
