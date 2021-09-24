@@ -33,7 +33,7 @@ def click(args: dict):
 # 创建主界面
 q_gui = CreateQGUI(title="一个新应用",  # 界面标题
                    tab_names=["主控制台", "选择按钮", "其他小工具"],  # 界面中心部分的分页标题 - 可不填
-                   style=QStyle.default)  # 皮肤
+                   style=QStyle.paddle)  # 皮肤
 
 # 在界面最上方添加一个按钮，链接到GitHub主页
 q_gui.add_banner_tool(GitHub(url="https://github.com/QPT-Family/QGUI"))
