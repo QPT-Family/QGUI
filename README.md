@@ -65,7 +65,7 @@ main_gui.run()
 ### 组件文档
 
 目前组件还在慢慢完善，随后就提供目录啦，可以先康一下[完整案例](qgui/template/full_case.py)  
-<img src="./ext/Full1.png" width="300" title="Demo展示效果"><img src="./ext/Full2.png" width="300" title="Demo展示效果"><img src="./ext/Full3.png" width="300" title="Demo展示效果">
+<img src="./ext/Full1.png" width="250" title="Demo展示效果"><img src="./ext/Full2.png" width="250" title="Demo展示效果"><img src="./ext/Full3.png" width="250" title="Demo展示效果">
 
 进阶教程和完整组件文档暂时还没有，先委屈一下看看源码吧~  
 [上方Banner工具](./qgui/bar_tools.py)  
