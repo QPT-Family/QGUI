@@ -53,27 +53,16 @@ class BaseChooseFileTextButton(BaseNotebookTool):
                  button_info: str = "选 择 文 件 ",
                  style: str = "primary",
                  tab_index: int = 0,
-                 async_run: bool = False):
+                 async_run: bool = False,
+                 mode="file"):
         super().__init__(bind_func, name=name, style=style, tab_index=tab_index, async_run=async_run)
 
         self.label_info = label_info
         self.button_info = button_info
         self.name = name
+        self.mode = mode
 
         self.entry_var = tkinter.StringVar(value=entry_info)
-
-    def _callback(self, func, start_func=None, end_func=None):
-        if not hasattr(self, "filetypes"):
-            self.filetypes = [('All Files', '*')]
-
-        def render():
-            file_path = filedialog.askopenfilename(title="选择文件",
-                                                   filetypes=self.filetypes)
-            if file_path:
-                self.entry_var.set(file_path)
-            return func(file_path)
-
-        return render
 
     def build(self, **kwargs) -> tkinter.Frame:
         super().build(**kwargs)
@@ -89,7 +78,23 @@ class BaseChooseFileTextButton(BaseNotebookTool):
                           textvariable=self.entry_var)
         entry.pack(side="left", fill="x", expand="yes", padx=5, pady=2)
 
-        command = self._callback(self.bind_func) if self.bind_func else self._callback(lambda x: print(f"文件{x}被选取"))
+        if self.mode == "file":
+            if not hasattr(self, "filetypes"):
+                self.filetypes = [('All Files', '*')]
+
+            def render():
+                file_path = filedialog.askopenfilename(title="选择文件",
+                                                       filetypes=self.filetypes)
+                if file_path:
+                    self.entry_var.set(file_path)
+
+        else:
+            def render():
+                file_path = filedialog.askdirectory(title="选择文件夹")
+                if file_path:
+                    self.entry_var.set(file_path)
+
+        command = self._callback(self.bind_func, start_func=render) if self.bind_func else render
         button = ttk.Button(frame,
                             text=self.button_info,
                             style=self.style + "TButton",
@@ -146,15 +151,6 @@ class ChooseDirTextButton(BaseChooseFileTextButton):
                          style=style,
                          tab_index=tab_index,
                          async_run=async_run)
-
-    def _callback(self, func, start_func=None, end_func=None):
-        def render():
-            file_path = filedialog.askdirectory(title="选择文件夹")
-            if file_path:
-                self.entry_var.set(file_path)
-            return func(file_path)
-
-        return render
 
 
 class BaseButton(BaseNotebookTool):
@@ -424,6 +420,7 @@ class BaseCheckButton(BaseNotebookTool):
                             style=self.style + self.button_style,
                             variable=self.value_vars[option],
                             command=self._callback(self.bind_func)).pack(side="left", padx=pad_x)
+        return frame
 
     def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
@@ -569,6 +566,7 @@ class BaseRadioButton(BaseNotebookTool):
                             variable=self.value_var,
                             value=option,
                             command=self._callback(self.bind_func)).pack(side="left", padx=pad_x)
+        return frame
 
     def get_arg_info(self) -> ArgInfo:
         field = self.name if self.name else self.__class__.__name__
@@ -742,6 +740,7 @@ class BaseFrameCombine(BaseCombine):
         for tool in self.tools:
             kwargs["master"] = frame
             tool.build(*args, **kwargs)
+        return frame
 
 
 class HorizontalFrameCombine(BaseFrameCombine):
@@ -796,3 +795,4 @@ class HorizontalToolsCombine(BaseCombine):
             sub_frame.pack(side="left", fill="x", expand="yes")
             kwargs["master"] = sub_frame
             tool.build(*args, **kwargs)
+        return frame

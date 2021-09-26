@@ -157,9 +157,9 @@ class BaseTool:
 
             return none
 
-    def build(self, *args, **kwargs):
-        self.global_info = kwargs["global_info"]
-        self.master = kwargs["master"]
+    def build(self, *args, **kwargs) -> tkinter.Frame:
+        self.global_info = kwargs.get("global_info")
+        self.master = kwargs.get("master")
 
     def get_arg_info(self) -> ArgInfo:
         return ArgInfo()

@@ -18,7 +18,7 @@ setup(
     author='GT-ZhangAcer',
     author_email='zhangacer@foxmail.com',
     description='QWebSite',
-    install_requires=["ttkbootstrap"],
+    install_requires=["ttkbootstrap", "pillow"],
     python_requires='>3.5',
     include_package_data=True,
 )

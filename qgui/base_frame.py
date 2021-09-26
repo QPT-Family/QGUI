@@ -125,18 +125,18 @@ class BaseNoteBook(_Backbone):
         sys.stderr = StdOutWrapper(self.stdout, callback=self._write_log_callback)
 
     def add_tool(self, tool: BaseNotebookTool, to_notebook=True):
-        if to_notebook:
-            if tool.tab_index >= len(self.nb_frames):
-                raise ValueError(f"设置的index大小越界，当前页面数量为{len(self.nb_frames)}，分别为：{self.nb_frames}，而"
-                                 f"您设置的index为{tool.tab_index}，超过了当前页面数量。")
-            frame = self.nb_frames[tool.tab_index]
-            tool.build(master=frame, global_info=self.global_info)
-        else:
-            frame = self.bottom_frame
-            tool.build(master=frame, global_info=self.global_info)
 
+        if tool.tab_index >= len(self.nb_frames):
+            raise ValueError(f"设置的index大小越界，当前页面数量为{len(self.nb_frames)}，分别为：{self.nb_frames}，而"
+                             f"您设置的index为{tool.tab_index}，超过了当前页面数量。")
+        if to_notebook:
+            frame = self.nb_frames[tool.tab_index]
+            tool_frame = tool.build(master=frame, global_info=self.global_info)
+        else:
+            tool_frame = tool.build(global_info=self.global_info)
         tool_info = tool.get_arg_info()
         self.global_info += tool_info
+        return tool_frame
 
     def build(self, master, global_info):
         super(BaseNoteBook, self).build(master, global_info)
@@ -180,11 +180,26 @@ class BaseNoteBook(_Backbone):
         self.text_area.insert("end", "控制台链接成功\n")
         self.text_area.configure(state="disable")
 
-        # ToDo 研究一下为什么会被覆盖ScrolledText
-        # 增加底部网格
-        self.bottom_frame = ttk.Frame(self.frame,
-                                      style=self.style + ".TFrame")
-        # self.bottom_frame.pack(side="top", fill='both', expand="yes")
+    def print_tool(self, tool: BaseNotebookTool):
+        self.text_area.configure(state="normal")
+        self.text_area.window_create("end", window=self.add_tool(tool, to_notebook=False))
+        self.text_area.configure(state="disable")
+        print("")
+
+    def print_image(self, image):
+        from PIL import Image, ImageTk
+        if isinstance(image, str):
+            image = Image.open(image)
+        w, h = image.size
+        scale = 256 / max(w, h)
+        w *= scale
+        h *= scale
+        image = image.resize((int(w), int(h)))
+        self.image_cache = ImageTk.PhotoImage(image)
+        self.text_area.configure(state="normal")
+        self.text_area.image_create("end", image=self.image_cache)
+        self.text_area.configure(state="disable")
+        print("")
 
     def _write_log_callback(self, text):
         if len(text) > 0 and text != "\n":

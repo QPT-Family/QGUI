@@ -85,6 +85,13 @@ class CreateQGUI:
 
     sni = set_navigation_info
 
+    def print_tool(self, tool: BaseNotebookTool):
+        self.notebook.print_tool(tool)
+
+
+    def print_image(self, image):
+        self.notebook.print_image(image)
+
     def run(self):
         self.root.mainloop()
 

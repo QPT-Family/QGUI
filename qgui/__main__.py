@@ -29,19 +29,44 @@ def click(args: dict):
         if i % 20 == 0:
             print("当前进度", i)
 
+    # 也可以在终端中打印组件，顺便绑定用户调研函数
+    q_gui.print_tool(RadioButton(["满意", "一般", "你好垃圾啊"], title="体验如何？", name="feedback", bind_func=feedback))
+    # 甚至打印图片
+    from qgui import RESOURCES_PATH
+    q_gui.print_image(os.path.join(RESOURCES_PATH, "demo/panda.jpg"))
+
+
+def feedback(args: dict):
+    # 用户调研Callback
+    info = args["feedback"].get()
+    if info == "满意":
+        print("么么哒")
+    elif info == "一般":
+        print("啊啊啊，告诉GT哪里没做好吧")
+    else:
+        print("以后漂流瓶见吧，拜拜！")
+
+
+def bind_dir(args: dict):
+    # 获取所选择文件所在的文件夹路径
+    path = os.path.dirname(args["文件选择"].get())
+    # 可以通过name参数来设置对应的内容，使用set方法即可完成设置
+    args["保存位置"].set(path)
+    print("保存位置已自动修改为：", path)
+
 
 # 创建主界面
 q_gui = CreateQGUI(title="一个新应用",  # 界面标题
                    tab_names=["主控制台", "选择按钮", "其他小工具"],  # 界面中心部分的分页标题 - 可不填
-                   style=QStyle.paddle)  # 皮肤
+                   style=QStyle.default)  # 皮肤
 
 # 在界面最上方添加一个按钮，链接到GitHub主页
 q_gui.add_banner_tool(GitHub(url="https://github.com/QPT-Family/QGUI"))
 # 要不试试自定义Banner按钮，在大家点击它时触发刚刚定义的click函数，并向它传递其他组件的情况
 q_gui.add_banner_tool(BaseBarTool(bind_func=click, name="一个新组件"))
 
-# 在主界面部分添加一个文件选择工具吧~
-q_gui.add_notebook_tool(ChooseFileTextButton(name="文件选择"))
+# 在主界面部分添加一个文件选择工具吧，并在选择文件后自动变为文件所在的路径
+q_gui.add_notebook_tool(ChooseFileTextButton(name="文件选择", bind_func=bind_dir))
 # 再加个文件夹选择工具
 q_gui.add_notebook_tool(ChooseDirTextButton(name="保存位置"))
 # 当然也可以来个输入框
