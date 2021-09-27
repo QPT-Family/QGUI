@@ -25,6 +25,8 @@ QGUI - 低于100k的超轻量桌面级图形化框架，可通过几行代码、
 * 通用方式 ```python -m pip install qgui```
 * 国内推荐 ```python -m pip install qgui -i https://mirrors.bfsu.edu.cn/pypi/web/simple```
 
+* 运行Demo/安装测试 ```python -m qgui``` 
+
 ### 代码示例/模板
 - [x] [以PaddleHub为例的完整示例](./qgui/template/paddlehub_demo.py)  
 
@@ -32,7 +34,7 @@ QGUI - 低于100k的超轻量桌面级图形化框架，可通过几行代码、
 
 ```python
 from qgui import CreateQGUI
-from qgui.bar_tools import BaseBarTool, GitHub
+from qgui.banner_tools import BaseBarTool, GitHub
 from qgui.notebook_tools import ChooseFileTextButton, RunButton
 
 
@@ -68,7 +70,7 @@ main_gui.run()
 <img src="./ext/Full1.png" width="250" title="Demo展示效果"><img src="./ext/Full2.png" width="250" title="Demo展示效果"><img src="./ext/Full3.png" width="250" title="Demo展示效果">
 
 进阶教程和完整组件文档暂时还没有，先委屈一下看看源码吧~  
-[上方Banner工具](./qgui/bar_tools.py)  
+[上方Banner工具](./qgui/banner_tools.py)  
 左侧Navigation工具：`main_gui.set_navigation_about()` and `main_gui.set_navigation_info()`  
 [中央Notebook工具](./qgui/notebook_tools.py)
 

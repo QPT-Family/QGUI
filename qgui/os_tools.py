@@ -25,3 +25,21 @@ class StdOutWrapper:
 
     def __del__(self):
         sys.stdout = self.stdout
+
+
+class DataCache:
+    def __init__(self, seq_len=10, cache=7):
+        assert seq_len >= cache, "请设置seq_len的值低于cache"
+        self.seq_len = seq_len
+        self.cache = cache
+        self.seq = list()
+
+    def add(self, item):
+        if len(self.seq) == self.seq_len:
+            for i in range(self.seq_len - self.cache):
+                self.seq.pop(0)
+        self.seq.append(item)
+
+    def __add__(self, other):
+        self.add(other)
+        return self

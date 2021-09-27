@@ -150,7 +150,8 @@ class ChooseDirTextButton(BaseChooseFileTextButton):
                          button_info=button_info,
                          style=style,
                          tab_index=tab_index,
-                         async_run=async_run)
+                         async_run=async_run,
+                         mode="dir")
 
 
 class BaseButton(BaseNotebookTool):
@@ -158,11 +159,13 @@ class BaseButton(BaseNotebookTool):
                  bind_func,
                  name: str = None,
                  text: str = "开始执行",
+                 icon: str = None,
                  checked_text: str = None,
                  async_run: bool = True,
                  style: str = "primary",
                  tab_index: int = 0,
-                 concurrency_mode: bool = False):
+                 concurrency_mode: bool = False,
+                 add_width=8):
         super().__init__(bind_func,
                          name=name,
                          style=style,
@@ -171,14 +174,18 @@ class BaseButton(BaseNotebookTool):
                          concurrency_mode=concurrency_mode)
         self.text = text
         self.checked_text = checked_text
+        self.add_width = add_width
 
-        self.icon = None
+        self.icon = icon
 
     def build(self, **kwargs) -> tkinter.Frame:
         super().build(**kwargs)
         frame = ttk.Frame(self.master, style="TFrame")
         frame.pack(side="top", fill="x", padx=5, pady=5)
-        self.icon = tkinter.PhotoImage(file=RUN_ICON)
+        if self.icon:
+            self.icon = tkinter.PhotoImage(file=self.icon)
+        else:
+            self.icon = None
 
         self.text_var = tkinter.StringVar(frame, value=self.text)
 
@@ -196,10 +203,10 @@ class BaseButton(BaseNotebookTool):
         self.btn = ttk.Button(frame,
                               textvariable=self.text_var,
                               image=self.icon,
+                              width=len(self.text) + self.add_width,
                               compound='left',
                               command=self._callback(self.bind_func, click_btn, done_btn),
-                              style=self.style + "TButton",
-                              width=10)
+                              style=self.style + "TButton")
 
         self.btn.pack(anchor="ne", padx=0, pady=0)
         return frame
@@ -222,7 +229,9 @@ class RunButton(BaseButton):
                          async_run=async_run,
                          style=style,
                          tab_index=tab_index,
-                         concurrency_mode=concurrency_mode)
+                         concurrency_mode=concurrency_mode,
+                         add_width=6,
+                         icon=RUN_ICON)
 
 
 class InputBox(BaseNotebookTool):
@@ -772,12 +781,11 @@ class VerticalFrameCombine(BaseFrameCombine):
 class HorizontalToolsCombine(BaseCombine):
     def __init__(self,
                  tools: BaseNotebookTool or List[BaseNotebookTool],
-                 side=HORIZONTAL,
                  title=None,
                  style: str = None,
                  tab_index: int = None):
         super().__init__(tools=tools,
-                         side=side,
+                         side=HORIZONTAL,
                          title=title,
                          style=style,
                          tab_index=tab_index)

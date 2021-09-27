@@ -13,10 +13,10 @@ from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 
 from qgui.manager import BLACK, FONT
-from qgui.bar_tools import BaseBarTool
+from qgui.banner_tools import BaseBarTool
 from qgui.third_party.collapsing_frame import CollapsingFrame
 from qgui.notebook_tools import BaseNotebookTool
-from qgui.os_tools import StdOutWrapper
+from qgui.os_tools import StdOutWrapper,DataCache
 from qgui.base_tools import ArgInfo
 
 TITLE_BG_COLOR = BLACK
@@ -124,6 +124,8 @@ class BaseNoteBook(_Backbone):
         sys.stdout = StdOutWrapper(self.stdout, callback=self._write_log_callback)
         sys.stderr = StdOutWrapper(self.stdout, callback=self._write_log_callback)
 
+        self.image_cache = DataCache()
+
     def add_tool(self, tool: BaseNotebookTool, to_notebook=True):
 
         if tool.tab_index >= len(self.nb_frames):
@@ -191,13 +193,14 @@ class BaseNoteBook(_Backbone):
         if isinstance(image, str):
             image = Image.open(image)
         w, h = image.size
-        scale = 256 / max(w, h)
+        scale = 128 / max(w, h)
         w *= scale
         h *= scale
         image = image.resize((int(w), int(h)))
-        self.image_cache = ImageTk.PhotoImage(image)
+        image = ImageTk.PhotoImage(image)
+        self.image_cache += image
         self.text_area.configure(state="normal")
-        self.text_area.image_create("end", image=self.image_cache)
+        self.text_area.image_create("end", image=image)
         self.text_area.configure(state="disable")
         print("")
 

@@ -11,12 +11,25 @@ from ttkbootstrap import Style
 
 from qgui.manager import QStyle, FONT
 from qgui.base_frame import BaseNoteBook, BaseBanner, BaseNavigation
-from qgui.bar_tools import BaseBarTool
+from qgui.banner_tools import BaseBarTool
 from qgui.notebook_tools import BaseNotebookTool
 from qgui.base_tools import check_callable
 
 
 class CreateQGUI:
+    """
+    创建最基础的QGUI程序
+
+    :param title: 主程序标题
+    :param style: 皮肤，需通过QStyle来确定
+    :param stout: 标准输出流
+    :param tab_names: List[str] 功能区Tab页面，默认为“主程序控制台”
+    :param banner: QGUI的Banner对象
+    :param navigation: QGUI的navigation对象
+    :param notebook: QGUI的notebook对象
+    :param bind_func: 全局事件绑定
+    """
+
     def __init__(self,
                  title="未命名应用",
                  style=QStyle.default,
@@ -62,11 +75,28 @@ class CreateQGUI:
         return self.notebook.global_info
 
     def add_banner_tool(self, tool: BaseBarTool):
+        """
+        在程序最上方添加小组件
+        :param tool: 继承于BaseBarTool的组件对象
+
+        Example
+            from qgui.banner_tools import GitHub
+            q_gui = CreateQGUI()
+            q_gui.add_banner_tool(GitHub())
+        """
         self.banner.add_tool(tool)
 
     abt = add_banner_tool
 
     def add_notebook_tool(self, tool: BaseNotebookTool):
+        """
+        在程序中央功能区添加小组件
+        :param tool: 继承于BaseNotebookTool的组件对象
+
+        Example
+            from qgui.notebook_tools import RunButton
+            q_gui.add_notebook_tool(RunButton())
+        """
         self.notebook.add_tool(tool)
 
     ant = add_notebook_tool
@@ -76,6 +106,12 @@ class CreateQGUI:
                              version: str = "0.0.1",
                              github_url: str = None,
                              other_info: List[str] = None):
+        """
+        设置左侧导航栏的程序基本信息
+        :param author: 作者
+        :param version: 版本号
+        :param github_url: GitHub链接
+        """
         self.navigation.add_about(author=author,
                                   version=version,
                                   github_url=github_url,
@@ -86,22 +122,38 @@ class CreateQGUI:
     def set_navigation_info(self,
                             title: str,
                             info: str):
+        """
+        设置左侧导航栏其他信息
+        :param title: 标题
+        :param info: 信息
+        """
         self.navigation.add_info(title=title, info=info)
 
     sni = set_navigation_info
 
     def print_tool(self, tool: BaseNotebookTool):
+        """
+        在终端中打印组件
+        :param tool: 继承于BaseNotebookTool的组件对象
+        """
         self.notebook.print_tool(tool)
 
     def print_image(self, image):
+        """
+        在终端中打印图像
+        :param image: 图像所在路径 or pillow图片对象
+        """
         self.notebook.print_image(image)
 
     def run(self):
+        """
+        展示GUI界面
+        """
         self.root.mainloop()
 
 
 if __name__ == '__main__':
-    from qgui.bar_tools import BaseBarTool
+    from qgui.banner_tools import BaseBarTool
     from qgui.notebook_tools import BaseChooseFileTextButton
 
     _tmp = CreateQGUI()

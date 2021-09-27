@@ -6,9 +6,8 @@
 import qgui.base_tools
 import qgui.factory
 import qgui.notebook_tools
-import qgui.bar_tools
+import qgui.banner_tools
 
-from typing import Dict
 
 from qgui.factory import CreateQGUI
 

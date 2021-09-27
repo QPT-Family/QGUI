@@ -3,7 +3,7 @@ import time
 # 导入CreateQGUI模块
 from qgui import CreateQGUI
 # 【可选】导入自定义导航栏按钮模块、GitHub导航栏模块
-from qgui.bar_tools import BaseBarTool, GitHub
+from qgui.banner_tools import BaseBarTool, GitHub
 # 【可选】一次性导入所有的主界面工具模块
 from qgui.notebook_tools import *
 # 【可选】导入占位符

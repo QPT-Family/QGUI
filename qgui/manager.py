@@ -43,16 +43,22 @@ class MessageBox:
         messagebox.showwarning(title, text)
 
     @staticmethod
-    def erroe(text: str, title: str = "错误 - QGUI"):
+    def error(text: str, title: str = "错误 - QGUI"):
         messagebox.showerror(title, text)
 
 
-def show_file_or_path(path):
-    if platform.system().lower() == "darwin":
-        import subprocess
-        subprocess.call(["open", path])
+def show_file_or_path(path, return_func=True):
+    def render(*args, **kwargs):
+        if platform.system().lower() == "darwin":
+            import subprocess
+            subprocess.call(["open", path])
+        else:
+            os.startfile(path)
+
+    if return_func:
+        return render
     else:
-        os.startfile(path)
+        return render()
 
 
 BLACK = "#24262d"
