@@ -6,7 +6,7 @@ import os
 
 from qgui import CreateQGUI
 from qgui.bar_tools import GitHub
-from qgui.notebook_tools import ChooseFileTextButton, ChooseDirTextButton, RunButton
+from qgui.notebook_tools import ChooseFileTextButton, ChooseDirTextButton, RunButton, BaseButton
 from qgui import MessageBox
 
 import paddlehub as hub

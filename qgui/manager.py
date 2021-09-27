@@ -4,6 +4,7 @@
 # Please indicate the source for reprinting.
 
 import os
+import platform
 
 from tkinter import messagebox
 
@@ -44,6 +45,14 @@ class MessageBox:
     @staticmethod
     def erroe(text: str, title: str = "错误 - QGUI"):
         messagebox.showerror(title, text)
+
+
+def show_file_or_path(path):
+    if platform.system().lower() == "darwin":
+        import subprocess
+        subprocess.call(["open", path])
+    else:
+        os.startfile(path)
 
 
 BLACK = "#24262d"

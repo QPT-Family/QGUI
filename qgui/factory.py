@@ -13,6 +13,7 @@ from qgui.manager import QStyle, FONT
 from qgui.base_frame import BaseNoteBook, BaseBanner, BaseNavigation
 from qgui.bar_tools import BaseBarTool
 from qgui.notebook_tools import BaseNotebookTool
+from qgui.base_tools import check_callable
 
 
 class CreateQGUI:
@@ -23,12 +24,16 @@ class CreateQGUI:
                  tab_names: List[str] = None,
                  banner: BaseBanner = None,
                  navigation: BaseNavigation = None,
-                 notebook: BaseNoteBook = None):
+                 notebook: BaseNoteBook = None,
+                 bind_func=None):
         super().__init__()
         self.title = title
         self.style = style
 
         self.root = tkinter.Tk()
+        if bind_func:
+            check_callable(bind_func=bind_func)
+            self.root.bind_all("<1>", bind_func)
         if self.style:
             self.root.style = Style(self.style)
         else:
@@ -87,7 +92,6 @@ class CreateQGUI:
 
     def print_tool(self, tool: BaseNotebookTool):
         self.notebook.print_tool(tool)
-
 
     def print_image(self, image):
         self.notebook.print_image(image)
