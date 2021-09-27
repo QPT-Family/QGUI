@@ -6,7 +6,7 @@
 from setuptools import setup
 from setuptools import find_packages
 
-__version__ = "0.0.4"
+__version__ = "0.1.0"
 
 # python setup.py sdist bdist_wheel
 setup(
