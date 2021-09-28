@@ -5,7 +5,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/QPT-Family/QGUI)
 ![GitHub](https://img.shields.io/github/license/QPT-Family/QGUI)
 ![](https://img.shields.io/badge/支持系统-Win/Linux/MAC-9cf)  
-QGUI - 低于100k的超轻量桌面级图形化框架，可通过几行代码、使用模板来快捷制作出属于你的图形化界面
+QGUI - 低于100k的超轻量桌面图形化框架，可通过几行代码、使用模板来快捷制作出属于你的图形化界面
 
 ## EAP - Easy access program
 
