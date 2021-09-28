@@ -75,7 +75,8 @@ q_gui.add_notebook_tool(InputBox(name="我是个木有感情的输入框"))
 # 试试HorizontalToolsCombine，它可以接受一组工具并将其进行水平排列
 # 这里我们也为RunButton绑定click函数
 run_menu = HorizontalToolsCombine([Progressbar(name="进度条"),
-                                   RunButton(bind_func=click)])
+                                   RunButton(bind_func=click)],
+                                  text="试试HorizontalToolsCombine，它可以接受一组工具并将其进行水平排列")
 q_gui.add_notebook_tool(run_menu)
 
 # 第二页 - 复选框和单选框
@@ -84,7 +85,8 @@ combine_left = VerticalFrameCombine([CheckButton(options=[("选择1", 0), ("选�
                                      CheckToolButton(options=[("选择1", 0), ("选择2", 1), ("选择3", 0)]),
                                      CheckObviousToolButton(options=[("选择1", 0), ("选择2", 1), ("选择3", 0)]),
                                      ToggleButton(options=("开", 1))],
-                                    tab_index=1)
+                                    tab_index=1,
+                                    text="使用VerticalFrameCombine可以将他们在垂直方向快速组合，它们会从左到右按顺序排列")
 q_gui.add_notebook_tool(combine_left)
 # 设置title参数后会为其增加标题
 combine_right = VerticalFrameCombine([RadioButton(["选择1", "选择2", "选择3"], tab_index=1),
@@ -94,6 +96,7 @@ combine_right = VerticalFrameCombine([RadioButton(["选择1", "选择2", "选择
 q_gui.add_notebook_tool(combine_right)
 
 # 第三页
+q_gui.add_notebook_tool(Label(text="这只是个简单的Label组件", alignment=RIGHT + TOP, tab_index=2))
 q_gui.add_notebook_tool(Slider(default=4, tab_index=2))
 q_gui.add_notebook_tool(Combobox(options=["选择1", "选择2", "选择3"], tab_index=2))
 

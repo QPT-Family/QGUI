@@ -8,7 +8,7 @@ from typing import Dict
 
 import tkinter
 
-from qgui.manager import ConcurrencyModeFlag
+from qgui.manager import *
 
 
 def check_callable(bind_func):
@@ -26,6 +26,22 @@ def check_callable(bind_func):
                         f"    def xxx():\n"
                         f"        Do sth\n"
                         f"    MakeThisTool(bind_func=xxx())")
+
+
+def make_anchor(anchor):
+    if anchor:
+        r_anchor = str()
+        if TOP in anchor:
+            r_anchor = "n"
+        if BOTTOM in anchor:
+            r_anchor = "s"
+        if LEFT in anchor:
+            r_anchor += "w"
+        if RIGHT in anchor:
+            r_anchor += "e"
+        return r_anchor
+    else:
+        return None
 
 
 class ArgInfo:

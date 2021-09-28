@@ -17,6 +17,10 @@ ICON_PATH = os.path.join(RESOURCES_PATH, "icon")
 
 HORIZONTAL = "Horizontal水平方向"
 VERTICAL = "Vertical垂直方向"
+LEFT = "左侧"
+RIGHT = "右侧"
+TOP = "顶端"
+BOTTOM = "底部"
 
 
 # Tools部分

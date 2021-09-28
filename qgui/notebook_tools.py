@@ -11,7 +11,7 @@ from tkinter import ttk
 from tkinter import filedialog
 
 from qgui.manager import *
-from qgui.base_tools import ConcurrencyModeFlag, check_callable, ArgInfo, select_var_dtype, BaseTool
+from qgui.base_tools import ConcurrencyModeFlag, check_callable, ArgInfo, select_var_dtype, BaseTool, make_anchor
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 
@@ -301,7 +301,8 @@ class Combobox(BaseNotebookTool):
                                  style=self.style + "TCombobox",
                                  values=self.options)
         self.comb.current(0)
-        self.comb.bind('<<ComboboxSelected>>', self._callback(self.bind_func))
+        if self.bind_func:
+            self.comb.bind('<<ComboboxSelected>>', self._callback(self.bind_func))
         self.comb.pack(side="left", padx=5, pady=2)
 
         return frame
@@ -715,12 +716,14 @@ class BaseCombine(BaseNotebookTool):
     def __init__(self,
                  tools: BaseNotebookTool or List[BaseNotebookTool],
                  side=HORIZONTAL,
-                 title=None,
+                 title: str = None,
+                 text: str = None,
                  style: str = None,
                  tab_index: int = None):
         super().__init__(tab_index=tab_index, style=style)
         self.side = "top" if side == HORIZONTAL else "left"
         self.title = title
+        self.text = text
 
         self.tools = tools if isinstance(tools, list) else [tools]
 
@@ -746,6 +749,11 @@ class BaseFrameCombine(BaseCombine):
         else:
             frame = ttk.Frame(self.master, text=self.title, style=self.style + style_mode)
         frame.pack(side="left", anchor="nw", fill="both", expand="yes", padx=8, pady=8)
+        if self.text:
+            label = ttk.Label(frame,
+                              text=self.text,
+                              style="TLabel")
+            label.pack(side="top", anchor="nw", padx=5)
         for tool in self.tools:
             kwargs["master"] = frame
             tool.build(*args, **kwargs)
@@ -757,11 +765,13 @@ class HorizontalFrameCombine(BaseFrameCombine):
                  tools: BaseNotebookTool or List[BaseNotebookTool],
                  title=None,
                  style: str = None,
+                 text: str = None,
                  tab_index: int = 0):
         super().__init__(tools=tools,
                          side=HORIZONTAL,
                          title=title,
                          style=style,
+                         text=text,
                          tab_index=tab_index)
 
 
@@ -770,11 +780,13 @@ class VerticalFrameCombine(BaseFrameCombine):
                  tools: BaseNotebookTool or List[BaseNotebookTool],
                  title=None,
                  style: str = None,
+                 text: str = None,
                  tab_index: int = 0):
         super().__init__(tools=tools,
                          side=VERTICAL,
                          title=title,
                          style=style,
+                         text=text,
                          tab_index=tab_index)
 
 
@@ -783,11 +795,13 @@ class HorizontalToolsCombine(BaseCombine):
                  tools: BaseNotebookTool or List[BaseNotebookTool],
                  title=None,
                  style: str = None,
+                 text: str = None,
                  tab_index: int = None):
         super().__init__(tools=tools,
                          side=HORIZONTAL,
                          title=title,
                          style=style,
+                         text=text,
                          tab_index=tab_index)
 
     def build(self, *args, **kwargs):
@@ -798,9 +812,49 @@ class HorizontalToolsCombine(BaseCombine):
         else:
             frame = ttk.Frame(self.master, style=self.style + style_mode)
         frame.pack(side="top", fill="x", expand="yes")
+        if self.text:
+            label = ttk.Label(frame,
+                              text=self.text,
+                              style="TLabel")
+            label.pack(side="top", anchor="nw", padx=5)
         for tool in self.tools:
             sub_frame = ttk.Frame(frame, style="TFrame")
             sub_frame.pack(side="left", fill="x", expand="yes")
             kwargs["master"] = sub_frame
             tool.build(*args, **kwargs)
         return frame
+
+
+class Label(BaseNotebookTool):
+    def __init__(self,
+                 name: str = None,
+                 text: str = None,
+                 alignment: str = LEFT + TOP,
+                 style: str = "primary",
+                 tab_index: int = 0):
+        super(Label, self).__init__(name=name,
+                                    style=style,
+                                    tab_index=tab_index)
+        self.text = text
+        self.alignment = alignment
+
+        self.label_var = tkinter.StringVar(value=self.text)
+
+    def build(self, *args, **kwargs) -> tkinter.Frame:
+        super(Label, self).build(*args, **kwargs)
+        frame = ttk.Frame(self.master)
+        frame.pack(side="top", fill="both")
+        label = ttk.Label(frame,
+                          text=self.text,
+                          textvariable=self.label_var,
+                          style="TLabel")
+        # make_anchor(self.alignment)
+        label.pack(anchor=make_anchor(self.alignment),
+                   padx=DEFAULT_PAD,
+                   pady=DEFAULT_PAD)
+        return frame
+
+    def get_arg_info(self) -> ArgInfo:
+        field = self.name if self.name else self.__class__.__name__
+        local_info = ArgInfo(field, set_func=self.label_var.set, get_func=self.label_var.get)
+        return local_info
