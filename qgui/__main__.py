@@ -55,6 +55,10 @@ def bind_dir(args: dict):
     print("保存位置已自动修改为：", path)
 
 
+def go_to_first_page(args: dict):
+    args["QGUI-BaseNoteBook"].set(0)
+
+
 # 创建主界面
 q_gui = CreateQGUI(title="一个新应用",  # 界面标题
                    tab_names=["主控制台", "选择按钮", "其他小工具"],  # 界面中心部分的分页标题 - 可不填
@@ -99,6 +103,7 @@ q_gui.add_notebook_tool(combine_right)
 q_gui.add_notebook_tool(Label(text="这只是个简单的Label组件", alignment=RIGHT + TOP, tab_index=2))
 q_gui.add_notebook_tool(Slider(default=4, tab_index=2))
 q_gui.add_notebook_tool(Combobox(options=["选择1", "选择2", "选择3"], tab_index=2))
+q_gui.add_notebook_tool(BaseButton(bind_func=go_to_first_page, text="回到首页", tab_index=2))
 
 # 左侧信息栏
 # 简单加个简介

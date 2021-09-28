@@ -16,7 +16,7 @@ from qgui.manager import BLACK, FONT
 from qgui.banner_tools import BaseBarTool
 from qgui.third_party.collapsing_frame import CollapsingFrame
 from qgui.notebook_tools import BaseNotebookTool
-from qgui.os_tools import StdOutWrapper,DataCache
+from qgui.os_tools import StdOutWrapper, DataCache
 from qgui.base_tools import ArgInfo
 
 TITLE_BG_COLOR = BLACK
@@ -157,6 +157,9 @@ class BaseNoteBook(_Backbone):
             sub_frame.pack(anchor="nw", expand="yes")
             self.nb_frames.append(sub_frame)
             self.nb.add(sub_frame, text="主程序控制台")
+        self.global_info += ArgInfo(name="QGUI-BaseNoteBook",
+                                    set_func=self._select_notebook_callback,
+                                    get_func=lambda: print("BaseNoteBook不支持get"))
 
         # 增加OutPut
         self.console_frame = ttk.Frame(self.frame,
@@ -203,6 +206,9 @@ class BaseNoteBook(_Backbone):
         self.text_area.image_create("end", image=image)
         self.text_area.configure(state="disable")
         print("")
+
+    def _select_notebook_callback(self, index):
+        self.nb.select(index)
 
     def _write_log_callback(self, text):
         if len(text) > 0 and text != "\n":

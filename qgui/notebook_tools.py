@@ -829,6 +829,7 @@ class Label(BaseNotebookTool):
     def __init__(self,
                  name: str = None,
                  text: str = None,
+                 title:str=None,
                  alignment: str = LEFT + TOP,
                  style: str = "primary",
                  tab_index: int = 0):
@@ -836,6 +837,7 @@ class Label(BaseNotebookTool):
                                     style=style,
                                     tab_index=tab_index)
         self.text = text
+        self.title = title
         self.alignment = alignment
 
         self.label_var = tkinter.StringVar(value=self.text)
@@ -843,15 +845,19 @@ class Label(BaseNotebookTool):
     def build(self, *args, **kwargs) -> tkinter.Frame:
         super(Label, self).build(*args, **kwargs)
         frame = ttk.Frame(self.master)
-        frame.pack(side="top", fill="both")
+        frame.pack(side="top", fill="both", padx=DEFAULT_PAD, pady=DEFAULT_PAD)
+        title = ttk.Label(frame,
+                          text=self.title,
+                          style="TLabel",
+                          width=LABEL_WIDTH)
+        title.pack(side="left")
+
         label = ttk.Label(frame,
                           text=self.text,
                           textvariable=self.label_var,
                           style="TLabel")
         # make_anchor(self.alignment)
-        label.pack(anchor=make_anchor(self.alignment),
-                   padx=DEFAULT_PAD,
-                   pady=DEFAULT_PAD)
+        label.pack(anchor=make_anchor(self.alignment))
         return frame
 
     def get_arg_info(self) -> ArgInfo:
