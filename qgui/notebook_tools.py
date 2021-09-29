@@ -35,13 +35,15 @@ class BaseNotebookTool(BaseTool):
                  style: str = "primary",
                  tab_index: int = 0,
                  async_run: bool = False,
-                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 frame: tkinter.Frame = None):
         super().__init__(bind_func=bind_func,
                          name=name,
                          style=style,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode)
         self.tab_index = tab_index
+        self.frame = frame
 
 
 class BaseChooseFileTextButton(BaseNotebookTool):
@@ -54,8 +56,9 @@ class BaseChooseFileTextButton(BaseNotebookTool):
                  style: str = "primary",
                  tab_index: int = 0,
                  async_run: bool = False,
-                 mode="file"):
-        super().__init__(bind_func, name=name, style=style, tab_index=tab_index, async_run=async_run)
+                 mode="file",
+                 frame: tkinter.Frame = None):
+        super().__init__(bind_func, name=name, style=style, tab_index=tab_index, async_run=async_run, frame=frame)
 
         self.label_info = label_info
         self.button_info = button_info
@@ -66,8 +69,11 @@ class BaseChooseFileTextButton(BaseNotebookTool):
 
     def build(self, **kwargs) -> tkinter.Frame:
         super().build(**kwargs)
-        frame = ttk.Frame(self.master, style="TFrame")
-        frame.pack(side="top", fill="x", padx=5, pady=2)
+        if self.frame:
+            frame = self.frame
+        else:
+            frame = ttk.Frame(self.master, style="TFrame")
+            frame.pack(side="top", fill="x", padx=5, pady=2)
         label = ttk.Label(frame,
                           text=self.label_info,
                           style="TLabel",
@@ -120,7 +126,8 @@ class ChooseFileTextButton(BaseChooseFileTextButton):
                  filetypes: bool = None,
                  style: str = "primary",
                  tab_index: int = 0,
-                 async_run: bool = False):
+                 async_run: bool = False,
+                 frame: tkinter.Frame = None):
         self.filetypes = [('All Files', '*')] if filetypes is None else filetypes
 
         super().__init__(bind_func=bind_func,
@@ -130,7 +137,8 @@ class ChooseFileTextButton(BaseChooseFileTextButton):
                          button_info=button_info,
                          style=style,
                          tab_index=tab_index,
-                         async_run=async_run)
+                         async_run=async_run,
+                         frame=frame)
 
 
 class ChooseDirTextButton(BaseChooseFileTextButton):
@@ -142,7 +150,8 @@ class ChooseDirTextButton(BaseChooseFileTextButton):
                  button_info: str = "选择文件夹",
                  style: str = "primary",
                  tab_index: int = 0,
-                 async_run: bool = False):
+                 async_run: bool = False,
+                 frame: tkinter.Frame = None):
         super().__init__(bind_func=bind_func,
                          name=name,
                          label_info=label_info,
@@ -151,7 +160,8 @@ class ChooseDirTextButton(BaseChooseFileTextButton):
                          style=style,
                          tab_index=tab_index,
                          async_run=async_run,
-                         mode="dir")
+                         mode="dir",
+                         frame=frame)
 
 
 class BaseButton(BaseNotebookTool):
@@ -165,13 +175,15 @@ class BaseButton(BaseNotebookTool):
                  style: str = "primary",
                  tab_index: int = 0,
                  concurrency_mode: bool = False,
-                 add_width=8):
+                 add_width=8,
+                 frame: tkinter.Frame = None):
         super().__init__(bind_func,
                          name=name,
                          style=style,
                          tab_index=tab_index,
                          async_run=async_run,
-                         concurrency_mode=concurrency_mode)
+                         concurrency_mode=concurrency_mode,
+                         frame=frame)
         self.text = text
         self.checked_text = checked_text
         self.add_width = add_width
@@ -180,8 +192,11 @@ class BaseButton(BaseNotebookTool):
 
     def build(self, **kwargs) -> tkinter.Frame:
         super().build(**kwargs)
-        frame = ttk.Frame(self.master, style="TFrame")
-        frame.pack(side="top", fill="x", padx=5, pady=5)
+        if self.frame:
+            frame = self.frame
+        else:
+            frame = ttk.Frame(self.master, style="TFrame")
+            frame.pack(side="top", fill="x", padx=5, pady=5)
         if self.icon:
             self.icon = tkinter.PhotoImage(file=self.icon)
         else:
@@ -200,6 +215,9 @@ class BaseButton(BaseNotebookTool):
             self.btn.configure(state="normal")
             self.text_var.set(self.text)
 
+        if not self.bind_func:
+            # 不知道为啥必须要有，不然文字不会显示，会头Debug一下
+            self.bind_func = lambda x: None
         self.btn = ttk.Button(frame,
                               textvariable=self.text_var,
                               image=self.icon,
@@ -208,7 +226,7 @@ class BaseButton(BaseNotebookTool):
                               command=self._callback(self.bind_func, click_btn, done_btn),
                               style=self.style + "TButton")
 
-        self.btn.pack(anchor="ne", padx=0, pady=0)
+        self.btn.pack(side="right", padx=5, pady=5)
         return frame
 
 
@@ -221,7 +239,8 @@ class RunButton(BaseButton):
                  async_run: bool = True,
                  style: str = "success",
                  tab_index: int = 0,
-                 concurrency_mode: bool = False):
+                 concurrency_mode: bool = False,
+                 frame: tkinter.Frame = None):
         super().__init__(bind_func=bind_func,
                          name=name,
                          text=text,
@@ -231,26 +250,32 @@ class RunButton(BaseButton):
                          tab_index=tab_index,
                          concurrency_mode=concurrency_mode,
                          add_width=6,
-                         icon=RUN_ICON)
+                         icon=RUN_ICON,
+                         frame=frame)
 
 
 class InputBox(BaseNotebookTool):
     def __init__(self,
-                 name=None,
-                 default="请在此输入",
-                 label_info="输入信息",
-                 style="primary",
-                 tab_index=0):
+                 name: str = None,
+                 default: str = "请在此输入",
+                 label_info: str = "输入信息",
+                 style: str = "primary",
+                 tab_index=0,
+                 frame: tkinter.Frame = None):
         super().__init__(name=name,
                          style=style,
-                         tab_index=tab_index)
+                         tab_index=tab_index,
+                         frame=frame)
         self.input_vars = tkinter.StringVar(value=default)
         self.label_info = label_info
 
     def build(self, **kwargs):
         super().build(**kwargs)
-        frame = ttk.Frame(self.master, style="TFrame")
-        frame.pack(side="top", fill="x", padx=5, pady=5)
+        if self.frame:
+            frame = self.frame
+        else:
+            frame = ttk.Frame(self.master, style="TFrame")
+            frame.pack(side="top", fill="x", padx=5, pady=5)
         label = ttk.Label(frame,
                           text=self.label_info,
                           style="TLabel",
@@ -278,11 +303,13 @@ class Combobox(BaseNotebookTool):
                  title: str = "请下拉选择",
                  options: List[str] = None,
                  style="custom",
-                 tab_index=0):
+                 tab_index=0,
+                 frame: tkinter.Frame = None):
         super().__init__(bind_func=bind_func,
                          name=name,
                          style=style,
-                         tab_index=tab_index)
+                         tab_index=tab_index,
+                         frame=frame)
         self.title = title
         self.options = options
 
@@ -290,8 +317,11 @@ class Combobox(BaseNotebookTool):
 
     def build(self, **kwargs):
         super().build(**kwargs)
-        frame = ttk.Frame(self.master, style="TFrame")
-        frame.pack(side="top", fill="x", padx=5, pady=5)
+        if self.frame:
+            frame = self.frame
+        else:
+            frame = ttk.Frame(self.master, style="TFrame")
+            frame.pack(side="top", fill="x", padx=5, pady=5)
         label = ttk.Label(frame,
                           text=self.title,
                           style="TLabel",
@@ -322,11 +352,13 @@ class Slider(BaseNotebookTool):
                  min_size: int = 0,
                  max_size: int = 100,
                  dtype=int,
-                 style="primary",
-                 tab_index=0):
+                 style: str = "primary",
+                 tab_index: int = 0,
+                 frame: tkinter.Frame = None):
         super().__init__(name=name,
                          style=style,
-                         tab_index=tab_index)
+                         tab_index=tab_index,
+                         frame=frame)
         self.title = title
         self.default = default
         self.min_size = min_size
@@ -339,13 +371,16 @@ class Slider(BaseNotebookTool):
 
     def build(self, **kwargs):
         super().build(**kwargs)
-
-        frame = ttk.Frame(self.master, style="TFrame")
+        if self.frame:
+            frame = self.frame
+        else:
+            frame = ttk.Frame(self.master, style="TFrame")
+            frame.pack(side="top", fill="x", padx=5, pady=5)
 
         self.slider_var = select_var_dtype(self.dtype)(frame, value=self.default)
         self.value_var = tkinter.StringVar(frame, value=f"当前值 {self.default}")
         self.slider_var.trace("w", self.slider_var_trace)
-        frame.pack(side="top", fill="x", padx=5, pady=5)
+
         label = ttk.Label(frame,
                           text=self.title,
                           style="TLabel",
@@ -384,13 +419,15 @@ class BaseCheckButton(BaseNotebookTool):
                  tab_index=0,
                  async_run=False,
                  concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
-                 mode=None):
+                 mode=None,
+                 frame: tkinter.Frame = None):
         super().__init__(bind_func=bind_func,
                          name=name,
                          style=style,
                          tab_index=tab_index,
                          async_run=async_run,
-                         concurrency_mode=concurrency_mode)
+                         concurrency_mode=concurrency_mode,
+                         frame=frame)
         self.title = title
         self.mode = mode
         if isinstance(options, str):
@@ -409,9 +446,11 @@ class BaseCheckButton(BaseNotebookTool):
 
     def build(self, *args, **kwargs):
         super().build(*args, **kwargs)
-        frame = ttk.Frame(self.master, style="TFrame")
-
-        frame.pack(side="top", fill="x", padx=5, pady=5)
+        if self.frame:
+            frame = self.frame
+        else:
+            frame = ttk.Frame(self.master, style="TFrame")
+            frame.pack(side="top", fill="x", padx=5, pady=5)
         label = ttk.Label(frame,
                           text=self.title,
                           style="TLabel",
@@ -450,7 +489,8 @@ class CheckButton(BaseCheckButton):
                  style="primary",
                  tab_index=0,
                  async_run=False,
-                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 frame: tkinter.Frame = None):
         super().__init__(options=options,
                          bind_func=bind_func,
                          name=name,
@@ -459,7 +499,8 @@ class CheckButton(BaseCheckButton):
                          button_style="TCheckbutton",
                          tab_index=tab_index,
                          async_run=async_run,
-                         concurrency_mode=concurrency_mode)
+                         concurrency_mode=concurrency_mode,
+                         frame=frame)
 
 
 class CheckToolButton(BaseCheckButton):
@@ -471,7 +512,8 @@ class CheckToolButton(BaseCheckButton):
                  style="info",
                  tab_index=0,
                  async_run=False,
-                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 frame: tkinter.Frame = None):
         super().__init__(options=options,
                          bind_func=bind_func,
                          name=name,
@@ -481,7 +523,8 @@ class CheckToolButton(BaseCheckButton):
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
-                         mode="ToolButton")
+                         mode="ToolButton",
+                         frame=frame)
 
 
 class CheckObviousToolButton(BaseCheckButton):
@@ -493,7 +536,8 @@ class CheckObviousToolButton(BaseCheckButton):
                  style="primary",
                  tab_index=0,
                  async_run=False,
-                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 frame: tkinter.Frame = None):
         super().__init__(options=options,
                          bind_func=bind_func,
                          name=name,
@@ -503,7 +547,8 @@ class CheckObviousToolButton(BaseCheckButton):
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
-                         mode="ToolButton")
+                         mode="ToolButton",
+                         frame=frame)
 
 
 class ToggleButton(BaseCheckButton):
@@ -515,7 +560,8 @@ class ToggleButton(BaseCheckButton):
                  style="primary",
                  tab_index=0,
                  async_run=False,
-                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 frame: tkinter.Frame = None):
         assert not isinstance(options, list), "开关按钮仅有开和关两个选项，请传入单个选项"
         super().__init__(options=options,
                          bind_func=bind_func,
@@ -525,7 +571,8 @@ class ToggleButton(BaseCheckButton):
                          button_style="Roundtoggle.Toolbutton",
                          tab_index=tab_index,
                          async_run=async_run,
-                         concurrency_mode=concurrency_mode)
+                         concurrency_mode=concurrency_mode,
+                         frame=frame)
 
 
 class BaseRadioButton(BaseNotebookTool):
@@ -540,13 +587,15 @@ class BaseRadioButton(BaseNotebookTool):
                  tab_index=0,
                  async_run=False,
                  concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
-                 mode=None):
+                 mode=None,
+                 frame: tkinter.Frame = None):
         super().__init__(bind_func=bind_func,
                          name=name,
                          style=style,
                          tab_index=tab_index,
                          async_run=async_run,
-                         concurrency_mode=concurrency_mode)
+                         concurrency_mode=concurrency_mode,
+                         frame=frame)
         self.title = title
         self.mode = mode
         self.options = [options] if isinstance(options, str) else options
@@ -555,9 +604,12 @@ class BaseRadioButton(BaseNotebookTool):
 
     def build(self, *args, **kwargs):
         super().build(*args, **kwargs)
-        frame = ttk.Frame(self.master, style="TFrame")
+        if self.frame:
+            frame = self.frame
+        else:
+            frame = ttk.Frame(self.master, style="TFrame")
+            frame.pack(side="top", fill="x", padx=5, pady=5)
 
-        frame.pack(side="top", fill="x", padx=5, pady=5)
         label = ttk.Label(frame,
                           text=self.title,
                           style="TLabel",
@@ -595,7 +647,8 @@ class RadioButton(BaseRadioButton):
                  style="primary",
                  tab_index=0,
                  async_run=False,
-                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 frame: tkinter.Frame = None):
         super().__init__(options=options,
                          default=default,
                          bind_func=bind_func,
@@ -606,7 +659,8 @@ class RadioButton(BaseRadioButton):
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
-                         mode=None)
+                         mode=None,
+                         frame=frame)
 
 
 class RadioToolButton(BaseRadioButton):
@@ -619,7 +673,8 @@ class RadioToolButton(BaseRadioButton):
                  style="info",
                  tab_index=0,
                  async_run=False,
-                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 frame: tkinter.Frame = None):
         super().__init__(options=options,
                          default=default,
                          bind_func=bind_func,
@@ -630,7 +685,8 @@ class RadioToolButton(BaseRadioButton):
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
-                         mode="ToolButton")
+                         mode="ToolButton",
+                         frame=frame)
 
 
 class RadioObviousToolButton(BaseRadioButton):
@@ -643,7 +699,8 @@ class RadioObviousToolButton(BaseRadioButton):
                  style="primary",
                  tab_index=0,
                  async_run=False,
-                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 frame: tkinter.Frame = None):
         super().__init__(options=options,
                          default=default,
                          bind_func=bind_func,
@@ -654,7 +711,8 @@ class RadioObviousToolButton(BaseRadioButton):
                          tab_index=tab_index,
                          async_run=async_run,
                          concurrency_mode=concurrency_mode,
-                         mode="ToolButton")
+                         mode="ToolButton",
+                         frame=frame)
 
 
 class Progressbar(BaseNotebookTool):
@@ -666,12 +724,14 @@ class Progressbar(BaseNotebookTool):
                  style: str = "primary",
                  tab_index: int = 0,
                  async_run: bool = False,
-                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG):
+                 concurrency_mode=ConcurrencyModeFlag.SAFE_CONCURRENCY_MODE_FLAG,
+                 frame: tkinter.Frame = None):
         super().__init__(name=name,
                          style=style,
                          tab_index=tab_index,
                          async_run=async_run,
-                         concurrency_mode=concurrency_mode)
+                         concurrency_mode=concurrency_mode,
+                         frame=frame)
         self.title = title
         self.default_value = default
         self.max_size = max_size
@@ -682,11 +742,16 @@ class Progressbar(BaseNotebookTool):
 
     def build(self, *args, **kwargs):
         super().build(*args, **kwargs)
-        frame = ttk.Frame(self.master, style="TFrame")
+        if self.frame:
+            frame = self.frame
+        else:
+            frame = ttk.Frame(self.master, style="TFrame")
+            frame.pack(side="top", fill="x", padx=5, pady=5, expand="yes")
+
         self.progressbar_var = tkinter.IntVar(frame, value=self.default_value)
         self.value_var = tkinter.StringVar(frame, value=f"进度 {self.default_value:.2f}%")
         self.progressbar_var.trace("w", self.progressbar_var_trace)
-        frame.pack(side="top", fill="x", padx=5, pady=5, expand="yes")
+
         label = ttk.Label(frame,
                           text=self.title,
                           style="TLabel",
@@ -702,7 +767,7 @@ class Progressbar(BaseNotebookTool):
                                textvariable=self.value_var,
                                style="TLabel",
                                width=LABEL_WIDTH)
-        self.value.pack(side="right")
+        self.value.pack(side="left")
         return frame
 
     def get_arg_info(self) -> ArgInfo:
@@ -719,8 +784,9 @@ class BaseCombine(BaseNotebookTool):
                  title: str = None,
                  text: str = None,
                  style: str = None,
-                 tab_index: int = None):
-        super().__init__(tab_index=tab_index, style=style)
+                 tab_index: int = None,
+                 frame: tkinter.Frame = None):
+        super().__init__(tab_index=tab_index, style=style, frame=frame)
         self.side = "top" if side == HORIZONTAL else "left"
         self.title = title
         self.text = text
@@ -743,12 +809,15 @@ class BaseFrameCombine(BaseCombine):
     def build(self, *args, **kwargs):
         super().build(self, *args, **kwargs)
 
-        style_mode = "TLabelframe" if self.title else "TFrame"
-        if self.title:
-            frame = ttk.LabelFrame(self.master, text=self.title, style=self.style + style_mode)
+        if self.frame:
+            frame = self.frame
         else:
-            frame = ttk.Frame(self.master, text=self.title, style=self.style + style_mode)
-        frame.pack(side="left", anchor="nw", fill="both", expand="yes", padx=8, pady=8)
+            style_mode = "TLabelframe" if self.title else "TFrame"
+            if self.title:
+                frame = ttk.LabelFrame(self.master, text=self.title, style=self.style + style_mode)
+            else:
+                frame = ttk.Frame(self.master, text=self.title, style=self.style + style_mode)
+            frame.pack(side="left", anchor="nw", fill="both", expand="yes", padx=DEFAULT_PAD, pady=DEFAULT_PAD)
         if self.text:
             label = ttk.Label(frame,
                               text=self.text,
@@ -766,13 +835,15 @@ class HorizontalFrameCombine(BaseFrameCombine):
                  title=None,
                  style: str = None,
                  text: str = None,
-                 tab_index: int = 0):
+                 tab_index: int = 0,
+                 frame: tkinter.Frame = None):
         super().__init__(tools=tools,
                          side=HORIZONTAL,
                          title=title,
                          style=style,
                          text=text,
-                         tab_index=tab_index)
+                         tab_index=tab_index,
+                         frame=frame)
 
 
 class VerticalFrameCombine(BaseFrameCombine):
@@ -781,13 +852,15 @@ class VerticalFrameCombine(BaseFrameCombine):
                  title=None,
                  style: str = None,
                  text: str = None,
-                 tab_index: int = 0):
+                 tab_index: int = 0,
+                 frame: tkinter.Frame = None):
         super().__init__(tools=tools,
                          side=VERTICAL,
                          title=title,
                          style=style,
                          text=text,
-                         tab_index=tab_index)
+                         tab_index=tab_index,
+                         frame=frame)
 
 
 class HorizontalToolsCombine(BaseCombine):
@@ -796,31 +869,33 @@ class HorizontalToolsCombine(BaseCombine):
                  title=None,
                  style: str = None,
                  text: str = None,
-                 tab_index: int = None):
+                 tab_index: int = None,
+                 frame: tkinter.Frame = None):
         super().__init__(tools=tools,
                          side=HORIZONTAL,
                          title=title,
                          style=style,
                          text=text,
-                         tab_index=tab_index)
+                         tab_index=tab_index,
+                         frame=frame)
 
     def build(self, *args, **kwargs):
         super().build(self, *args, **kwargs)
+
         style_mode = "TLabelframe" if self.title else "TFrame"
         if self.title:
             frame = ttk.LabelFrame(self.master, text=self.title, style=self.style + style_mode)
         else:
             frame = ttk.Frame(self.master, style=self.style + style_mode)
-        frame.pack(side="top", fill="x", expand="yes")
+        frame.pack(side="top", fill="x", padx=DEFAULT_PAD, pady=DEFAULT_PAD)
         if self.text:
             label = ttk.Label(frame,
                               text=self.text,
                               style="TLabel")
-            label.pack(side="top", anchor="nw", padx=5)
+            label.pack(side="top", anchor="nw", padx=DEFAULT_PAD)
         for tool in self.tools:
-            sub_frame = ttk.Frame(frame, style="TFrame")
-            sub_frame.pack(side="left", fill="x", expand="yes")
-            kwargs["master"] = sub_frame
+            kwargs["master"] = self.frame
+            tool.frame = frame
             tool.build(*args, **kwargs)
         return frame
 
@@ -829,13 +904,15 @@ class Label(BaseNotebookTool):
     def __init__(self,
                  name: str = None,
                  text: str = None,
-                 title:str=None,
+                 title: str = None,
                  alignment: str = LEFT + TOP,
                  style: str = "primary",
-                 tab_index: int = 0):
+                 tab_index: int = 0,
+                 frame: tkinter.Frame = None):
         super(Label, self).__init__(name=name,
                                     style=style,
-                                    tab_index=tab_index)
+                                    tab_index=tab_index,
+                                    frame=frame)
         self.text = text
         self.title = title
         self.alignment = alignment
@@ -844,8 +921,11 @@ class Label(BaseNotebookTool):
 
     def build(self, *args, **kwargs) -> tkinter.Frame:
         super(Label, self).build(*args, **kwargs)
-        frame = ttk.Frame(self.master)
-        frame.pack(side="top", fill="both", padx=DEFAULT_PAD, pady=DEFAULT_PAD)
+        if self.frame:
+            frame = self.frame
+        else:
+            frame = ttk.Frame(self.master)
+            frame.pack(side="top", fill="both", padx=DEFAULT_PAD, pady=DEFAULT_PAD)
         title = ttk.Label(frame,
                           text=self.title,
                           style="TLabel",
