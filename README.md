@@ -11,12 +11,11 @@ QGUI - 低于100k的超轻量桌面图形化框架，可通过几行代码、使
 
 > 当前版本为概念版本，仅确定QGUI架构使用，其中大部分功能不完善，如有需求可在issue中提出。
 
-**版本规划**  
-- [ ] 9月完成 V1.0预览版 - 提供常规GUI组件以及Callback
-- [ ] 10月完成 V1.0正式版 - 完善预览版，提供窗口拓展组件
-- [ ] 11月完成 V1.1 - 优化GUI排版，增加皮肤
-- [ ] 12月完成 V1.2 - 适配更多深度学习输入格式
-- [ ] 2022 - 支持远程模式
+### 相关案例
+| 项目名 | 项目描述 | GUI部分源码 |
+| ----- | -----   | -----     |
+|[油画带师](https://github.com/AP-Kai/Paint-Master)|可将图片、视频转化为油画风格，支持GPU转换 | [GUI部分源码](https://github.com/AP-Kai/Paint-Master/blob/main/run.py)  
+[QWebsite](https://github.com/QPT-Family/QWebSiteOptimizer)| 为GitHub浏览与Clone提供加速能力，且非科学上网| [GUI部分源码](https://github.com/QPT-Family/QWebSiteOptimizer/blob/main/qwebsite/submethod/github.py)
 
 ## 快速上手
 
@@ -73,4 +72,11 @@ main_gui.run()
 [上方Banner工具](./qgui/banner_tools.py)  
 左侧Navigation工具：`main_gui.set_navigation_about()` and `main_gui.set_navigation_info()`  
 [中央Notebook工具](./qgui/notebook_tools.py)
+
+## 版本规划 
+- [ ] 9月完成 V1.0预览版 - 提供常规GUI组件以及Callback
+- [ ] 10月完成 V1.0正式版 - 完善预览版，提供窗口拓展组件
+- [ ] 11月完成 V1.1 - 优化GUI排版，增加皮肤
+- [ ] 12月完成 V1.2 - 适配更多深度学习输入格式
+- [ ] 2022 - 支持远程模式
 
