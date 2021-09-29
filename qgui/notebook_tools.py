@@ -11,7 +11,8 @@ from tkinter import ttk
 from tkinter import filedialog
 
 from qgui.manager import *
-from qgui.base_tools import ConcurrencyModeFlag, check_callable, ArgInfo, select_var_dtype, BaseTool, make_anchor
+from qgui.base_tools import ConcurrencyModeFlag, check_callable, ArgInfo, select_var_dtype, BaseTool, make_anchor, \
+    make_side
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 
@@ -175,6 +176,7 @@ class BaseButton(BaseNotebookTool):
                  style: str = "primary",
                  tab_index: int = 0,
                  concurrency_mode: bool = False,
+                 side: str = RIGHT,
                  add_width=8,
                  frame: tkinter.Frame = None):
         super().__init__(bind_func,
@@ -187,6 +189,7 @@ class BaseButton(BaseNotebookTool):
         self.text = text
         self.checked_text = checked_text
         self.add_width = add_width
+        self.side = side
 
         self.icon = icon
 
@@ -226,7 +229,7 @@ class BaseButton(BaseNotebookTool):
                               command=self._callback(self.bind_func, click_btn, done_btn),
                               style=self.style + "TButton")
 
-        self.btn.pack(side="right", padx=5, pady=5)
+        self.btn.pack(side=make_side(self.side), padx=5, pady=5)
         return frame
 
 
@@ -240,6 +243,7 @@ class RunButton(BaseButton):
                  style: str = "success",
                  tab_index: int = 0,
                  concurrency_mode: bool = False,
+                 alignment: str = RIGHT,
                  frame: tkinter.Frame = None):
         super().__init__(bind_func=bind_func,
                          name=name,
@@ -251,6 +255,7 @@ class RunButton(BaseButton):
                          concurrency_mode=concurrency_mode,
                          add_width=6,
                          icon=RUN_ICON,
+                         alignment=alignment,
                          frame=frame)
 
 

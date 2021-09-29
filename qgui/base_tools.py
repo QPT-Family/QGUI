@@ -44,6 +44,21 @@ def make_anchor(anchor):
         return None
 
 
+def make_side(side):
+    if side:
+        if side == TOP:
+            side = "top"
+        elif side == BOTTOM:
+            side = "bottom"
+        elif side == LEFT:
+            side = "left"
+        else:
+            side = "right"
+        return side
+    else:
+        return None
+
+
 class ArgInfo:
     def __init__(self, name=None, set_func=None, get_func=None):
         if not name and (set_func or get_func):
