@@ -926,6 +926,7 @@ class Label(BaseNotebookTool):
         else:
             frame = ttk.Frame(self.master)
             frame.pack(side="top", fill="both", padx=DEFAULT_PAD, pady=DEFAULT_PAD)
+
         title = ttk.Label(frame,
                           text=self.title,
                           style="TLabel",
@@ -937,7 +938,7 @@ class Label(BaseNotebookTool):
                           textvariable=self.label_var,
                           style="TLabel")
         # make_anchor(self.alignment)
-        label.pack(anchor=make_anchor(self.alignment))
+        label.pack(anchor=make_anchor(self.alignment), padx=DEFAULT_PAD)
         return frame
 
     def get_arg_info(self) -> ArgInfo:
