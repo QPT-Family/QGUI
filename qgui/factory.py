@@ -6,7 +6,6 @@ from typing import List
 
 import tkinter
 import tkinter.font
-
 from ttkbootstrap import Style
 
 from qgui.manager import QStyle, FONT
@@ -32,7 +31,7 @@ class CreateQGUI:
 
     def __init__(self,
                  title="未命名应用",
-                 style=QStyle.default,
+                 style: dict = None,
                  stout=None,
                  tab_names: List[str] = None,
                  banner: BaseBanner = None,
@@ -48,9 +47,9 @@ class CreateQGUI:
             check_callable(bind_func=bind_func)
             self.root.bind_all("<1>", bind_func)
         if self.style:
-            self.root.style = Style(self.style)
+            self.root.style = Style(**self.style)
         else:
-            self.root.style = Style()
+            self.root.style = QStyle.default()
         self.root.style.configure('bg.TFrame', background=self.root.style.colors.inputbg)
         self.root.style.configure('bg.TLabel', background=self.root.style.colors.inputbg)
         default_font = tkinter.font.nametofont("TkDefaultFont")

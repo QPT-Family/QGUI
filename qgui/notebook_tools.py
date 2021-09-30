@@ -243,7 +243,7 @@ class RunButton(BaseButton):
                  style: str = "success",
                  tab_index: int = 0,
                  concurrency_mode: bool = False,
-                 alignment: str = RIGHT,
+                 side: str = RIGHT,
                  frame: tkinter.Frame = None):
         super().__init__(bind_func=bind_func,
                          name=name,
@@ -255,7 +255,7 @@ class RunButton(BaseButton):
                          concurrency_mode=concurrency_mode,
                          add_width=6,
                          icon=RUN_ICON,
-                         alignment=alignment,
+                         side=side,
                          frame=frame)
 
 

@@ -7,6 +7,7 @@ import os
 import platform
 
 from tkinter import messagebox
+from ttkbootstrap import Style
 
 import qgui
 
@@ -14,6 +15,7 @@ import qgui
 QGUI_BASE_PATH = os.path.dirname(qgui.__file__)
 RESOURCES_PATH = os.path.join(QGUI_BASE_PATH, "resources")
 ICON_PATH = os.path.join(RESOURCES_PATH, "icon")
+THEME_PATH = os.path.join(QGUI_BASE_PATH, "theme/ttkbootstrap_themes.json")
 
 HORIZONTAL = "Horizontal水平方向"
 VERTICAL = "Vertical垂直方向"
@@ -31,10 +33,17 @@ class ConcurrencyModeFlag:
 
 
 class QStyle:
-    default = None
-    lumen = "lumen"
-    # 以下需后期重新定制颜色方案
-    paddle = "cosmo"
+    default = {"theme": "qgui", "themes_file": THEME_PATH}
+
+    lumen = {"theme": "lumen"}
+
+    paddle = {"theme": "paddlelight", "themes_file": THEME_PATH}
+
+    paddle_dark = {"theme": "paddledark", "themes_file": THEME_PATH}
+
+    pytorch = {"theme": "pytorch", "themes_file": THEME_PATH}
+
+    tensorflow = {"theme": "tensorflow", "themes_file": THEME_PATH}
 
 
 class MessageBox:
