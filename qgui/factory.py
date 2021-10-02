@@ -49,7 +49,7 @@ class CreateQGUI:
         if self.style:
             self.root.style = Style(**self.style)
         else:
-            self.root.style = QStyle.default()
+            self.root.style = Style(**QStyle.default)
         self.root.style.configure('bg.TFrame', background=self.root.style.colors.inputbg)
         self.root.style.configure('bg.TLabel', background=self.root.style.colors.inputbg)
         default_font = tkinter.font.nametofont("TkDefaultFont")
