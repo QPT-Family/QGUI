@@ -1,7 +1,7 @@
 import time
 
 # 导入CreateQGUI模块
-from qgui import CreateQGUI
+from qgui import CreateQGUI, MessageBox
 # 【可选】导入自定义导航栏按钮模块、GitHub导航栏模块
 from qgui.banner_tools import BaseBarTool, GitHub
 # 【可选】一次性导入所有的主界面工具模块
@@ -11,7 +11,7 @@ from qgui.manager import QStyle, HORIZONTAL
 
 
 def click(args: dict):
-    qgui.MessageBox.info("要开始啦~")
+    MessageBox.info("要开始啦~")
     # 证明一下自己被点到了
     print("你点到我啦~")
     # 通过ChooseFileTextButton(name="文件选择")中预先设置的name参数，使用get方法即可获取对应的输入框信息
@@ -29,7 +29,7 @@ def click(args: dict):
         # 增加打印间隔
         if i % 20 == 0:
             print("当前进度", i)
-    qgui.MessageBox.warning(text="给个评价吧亲~")
+    MessageBox.warning(text="给个评价吧亲~")
     # 也可以在终端中打印组件，顺便绑定用户调研函数
     q_gui.print_tool(RadioButton(["满意", "一般", "你好垃圾啊"], title="体验如何？", name="feedback", bind_func=feedback))
     # 甚至打印图片
