@@ -1,3 +1,4 @@
+```python
 # Author: Acer Zhang
 # Datetime: 2021/9/17 
 # Copyright belongs to the author.
@@ -14,7 +15,7 @@ import cv2
 
 human_seg = hub.Module(name="deeplabv3p_xception65_humanseg")
 
-
+# 预测主程序
 def infer(args):
     img_path = args["文件输入框"].get()
     out_path = args["保存位置"].get()
@@ -57,3 +58,4 @@ main_gui.set_navigation_about(author="GT",
                               github_url="https://github.com/QPT-Family/QGUI")
 # 跑起来~
 main_gui.run()
+```
