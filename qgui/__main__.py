@@ -3,7 +3,7 @@ import time
 # 导入CreateQGUI模块
 from qgui import CreateQGUI, MessageBox
 # 【可选】导入自定义导航栏按钮模块、GitHub导航栏模块
-from qgui.banner_tools import BaseBarTool, GitHub
+from qgui.banner_tools import BaseBarTool, GitHub, AIStudio
 # 【可选】一次性导入所有的主界面工具模块
 from qgui.notebook_tools import *
 # 【可选】导入占位符
@@ -67,6 +67,8 @@ q_gui = CreateQGUI(title="一个新应用",  # 界面标题
 
 # 在界面最上方添加一个按钮，链接到GitHub主页
 q_gui.add_banner_tool(GitHub(url="https://github.com/QPT-Family/QGUI"))
+# 也可以是AI Studio
+q_gui.add_banner_tool(AIStudio(url="https://aistudio.baidu.com/aistudio/personalcenter/thirdview/29724"))
 # 要不试试自定义Banner按钮，在大家点击它时触发刚刚定义的click函数，并向它传递其他组件的情况
 q_gui.add_banner_tool(BaseBarTool(bind_func=click, name="一个新组件"))
 

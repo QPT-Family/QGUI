@@ -12,6 +12,7 @@ from qgui.base_tools import ArgInfo, BaseTool
 
 RUN_ICON = os.path.join(ICON_PATH, "play_w.png")
 GITHUB_ICON = os.path.join(ICON_PATH, "github.png")
+AI_STUDIO_ICON =  os.path.join(ICON_PATH, "up_cloud.png")
 
 
 class BaseBarTool(BaseTool):
@@ -86,3 +87,20 @@ class GitHub(BaseBarTool):
 
     def github_callback(self, args):
         webbrowser.open_new(self.github_url)
+
+
+class AIStudio(BaseBarTool):
+    def __init__(self,
+                 url,
+                 name="在AI Studio云端环境上使用（推荐）",
+                 style="primary"):
+        icon = AI_STUDIO_ICON
+        bind_func = self.ai_studio_callback
+        super().__init__(bind_func,
+                         name=name,
+                         icon=icon,
+                         style=style)
+        self.ai_studio_url = url
+
+    def ai_studio_callback(self, args):
+        webbrowser.open_new(self.ai_studio_url)
