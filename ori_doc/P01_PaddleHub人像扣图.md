@@ -51,7 +51,7 @@ main_gui.add_notebook_tool(ChooseFileTextButton(name="文件输入框"))
 main_gui.add_notebook_tool(ChooseDirTextButton(name="保存位置"))
 # 添加一个运行按钮
 main_gui.add_notebook_tool(RunButton(infer))
-main_gui.set_navigation_info("该项目基于PaddleHub和QGUI制作的人像扣图小工具，在右侧选择需要扣图的图片和保存位置，点击开始运行即可获取结果。")
+main_gui.set_navigation_info(title="基于PaddleHub的人像扣图小工具",info="该项目基于PaddleHub和QGUI制作的人像扣图小工具，在右侧选择需要扣图的图片和保存位置，点击开始运行即可获取结果。")
 # 简单加个简介
 main_gui.set_navigation_about(author="GT",
                               version="0.0.1",
