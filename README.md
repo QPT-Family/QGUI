@@ -74,10 +74,3 @@ main_gui.run()
 左侧Navigation工具：`main_gui.set_navigation_about()` and `main_gui.set_navigation_info()`  
 [中央Notebook工具](./qgui/notebook_tools.py)
 
-## 版本规划 
-- [ ] 9月完成 V1.0预览版 - 提供常规GUI组件以及Callback
-- [ ] 10月完成 V1.0正式版 - 完善预览版，提供窗口拓展组件
-- [ ] 11月完成 V1.1 - 优化GUI排版，增加皮肤
-- [ ] 12月完成 V1.2 - 适配更多深度学习输入格式
-- [ ] 2022 - 支持远程模式
-
