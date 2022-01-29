@@ -18,7 +18,7 @@ setup(
     author='GT-ZhangAcer',
     author_email='zhangacer@foxmail.com',
     description='QGUI - 0.1MB超轻量Python GUI框架，用模板来快捷制作深度学习模型推理界面 ',
-    install_requires=["ttkbootstrap", "pillow"],
+    install_requires=["ttkbootstrap==0.5.1", "pillow"],
     python_requires='>3.5',
     include_package_data=True,
 )
