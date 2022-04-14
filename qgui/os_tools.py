@@ -16,7 +16,7 @@ class StdOutWrapper:
         self.buff += output_stream
         if self.do_print:
             self.stdout.write(output_stream)
-        if self.callback and "\n" in self.buff:
+        if self.callback and ("\n" in self.buff or "\r" in output_stream):
             self.callback(self.buff)
             self.buff = ""
 

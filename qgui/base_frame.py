@@ -117,6 +117,9 @@ class BaseNoteBook(_Backbone):
         super(BaseNoteBook, self).__init__(f_style=style)
         self.tab_names = tab_names
         self.nb_frames = list()
+
+        # 初始化总输出行数
+        self.line_len = 2
         if not stdout:
             stdout = sys.stdout
         self.stdout = stdout
@@ -211,10 +214,19 @@ class BaseNoteBook(_Backbone):
         self.nb.select(index)
 
     def _write_log_callback(self, text):
+        self.text_area.configure(state="normal")
+
+        # 对print形式的进度条进行适配
+        if "\r" in text:
+            self.text_area.delete(str(self.line_len) + ".0", str(self.line_len) + ".end")
+            self.line_len -= 1
+            text = text[text.index("\r") + 1:] + " "
+
         if len(text) > 0 and text != "\n":
             text = time.strftime("%H:%M:%S", time.localtime()) + "\t" + text
-        self.text_area.configure(state="normal")
+
         self.text_area.insert("end", text)
+        self.line_len += 1
         self.text_area.configure(state="disable")
         self.text_area.see("end")
 
