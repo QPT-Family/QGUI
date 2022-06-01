@@ -7,6 +7,8 @@
 ![](https://img.shields.io/badge/支持系统-Win/Linux/MAC-9cf)  
 QGUI - 低于100k的超轻量桌面图形化框架，可通过几行代码、使用模板来快捷制作出属于你的图形化界面
 
+> 由于精力有限，若该项目Star数量超过100，则会优先考虑更新GUI，目前更新暂时以基座QPT为主
+
 ## EAP - Easy access program
 
 > 当前版本为概念版本，如有需求或建议可在issue中提出。
