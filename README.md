@@ -16,10 +16,10 @@ QGUI - 低于100k的超轻量桌面图形化框架，可通过几行代码、使
 ### 相关案例
 | 项目名 | 项目描述 | GUI源码 |
 | ----- | -----   | --------     |
+| [**完整案例**](qgui/__main__.py) | [**QGUI的全部基础组件组成的案例**](qgui/__main__.py) |[**GUI源码**](qgui/__main__.py) 
 |[油画带师](https://github.com/AP-Kai/Paint-Master)| 基于[飞桨PaddlePaddle](https://github.com/PaddlePaddle)的风格迁移工具，可将图片、视频转化为油画风格，支持GPU转换 | [GUI源码](https://github.com/AP-Kai/Paint-Master/blob/main/run.py)  
 |[QWebsite](https://github.com/QPT-Family/QWebSiteOptimizer)| 为GitHub浏览与Clone提供加速能力，且非科学上网| [GUI源码](https://github.com/QPT-Family/QWebSiteOptimizer/blob/main/qwebsite/submethod/github.py)
 |人像扣图|基于PaddleHub的人像扣图小工具|[GUI源码](ori_doc/P01_PaddleHub人像扣图.md) 
-|完整案例|QGUI的全部基础组件组成的案例|[GUI源码](qgui/__main__.py) 
 |[音乐分离](https://github.com/Freddd13/music-separation-gui)|基于[music_source_separation](https://github.com/bytedance/music_source_separation)的人声伴奏分离GUI|[GUI源码](https://github.com/Freddd13/music-separation-gui/blob/main/MainUI.py) 
 
 ## 快速上手
