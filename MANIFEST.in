@@ -1,2 +1,3 @@
 recursive-include qgui/resources *
 recursive-include qgui/theme *
+include README.MD
