@@ -58,6 +58,8 @@ class BaseNavigation(_Backbone):
                   author: str = "未知作者",
                   version: str = "0.0.1",
                   github_url: str = None,
+                  bilibili_url: str = None,
+                  blog_url: str = None,
                   other_info: List[str] = None):
         bus_cf = CollapsingFrame(self.frame)
         bus_cf.pack(fill='x', pady=0)
@@ -80,6 +82,22 @@ class BaseNavigation(_Backbone):
             github_label = ttk.Label(bus_frm, text=f"> 进入GitHub", style="info.TLabel", justify="left")
             github_label.pack(anchor="nw")
             github_label.bind("<Button-1>", github_callback)
+
+        if bilibili_url:
+            def bilibili_callback(event):
+                webbrowser.open_new(bilibili_url)
+
+            bilibili_label = ttk.Label(bus_frm, text=f"> 进入bilibili", style="info.TLabel", justify="left")
+            bilibili_label.pack(anchor="nw")
+            bilibili_label.bind("<Button-1>", bilibili_callback)
+
+        if blog_url:
+            def blog_callback(event):
+                webbrowser.open_new(blog_url)
+
+            blog_label = ttk.Label(bus_frm, text=f"> 进入blog", style="info.TLabel", justify="left")
+            blog_label.pack(anchor="nw")
+            blog_label.bind("<Button-1>", blog_callback)
 
     def add_info(self,
                  title: str,
