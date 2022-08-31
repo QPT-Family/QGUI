@@ -104,16 +104,22 @@ class CreateQGUI:
                              author: str = "未知作者",
                              version: str = "0.0.1",
                              github_url: str = None,
+                             bilibili_url: str = None,
+                             blog_url: str = None,
                              other_info: List[str] = None):
         """
         设置左侧导航栏的程序基本信息
         :param author: 作者
         :param version: 版本号
         :param github_url: GitHub链接
+        :param bilibili_url: bilibili链接
+        :param blog_url: blog链接
         """
         self.navigation.add_about(author=author,
                                   version=version,
                                   github_url=github_url,
+                                  bilibili_url=bilibili_url,
+                                  blog_url=blog_url,
                                   other_info=other_info)
 
     sna = set_navigation_about
